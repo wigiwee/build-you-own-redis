@@ -24,6 +24,7 @@ public class RequestHandler {
                 if (content.equalsIgnoreCase("ping")) {
                     writer.write("+PONG\r\n");
                     writer.flush();
+                    writer.close();
                 }
             }
         }
