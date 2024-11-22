@@ -7,24 +7,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 
 public class Main {
-
-    public static void process(Socket clientSocket) throws IOException{
-        try(
-            BufferedReader reader = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
-            BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(clientSocket.getOutputStream()));
-        ){
-            String content ;
-            while ((content = reader.readLine()) != null) {
-                System.out.println("content: "+ content);
-                if(content.equalsIgnoreCase("ping")){
-                    writer.write("+PONG\r\n");
-                    writer.flush();
-                }
-            }
-
-        }
-
-    }
+    
     public static void main(String[] args) {
         // You can use print statements as follows for debugging, they'll be visible
         // when running tests.
@@ -41,8 +24,17 @@ public class Main {
 
             // Wait for connection from client.
             clientSocket = serverSocket.accept();
-            
-            process(clientSocket);
+            while (true) {
+                RequestHandler requestHandler = new RequestHandler(clientSocket);
+                Thread.startVirtualThread(() -> {
+                    try {
+                        requestHandler.run();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                });
+            }
+
         } catch (IOException e) {
             System.out.println("IOException: " + e.getMessage());
         } finally {
