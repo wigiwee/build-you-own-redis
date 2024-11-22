@@ -19,9 +19,9 @@ public class Main {
         int port = 6379;
         try {
 
+            serverSocket = new ServerSocket(port);
+            serverSocket.setReuseAddress(true);
             while (true) {
-                serverSocket = new ServerSocket(port);
-                serverSocket.setReuseAddress(true);
     
                 // Wait for connection from client.
                 clientSocket = serverSocket.accept();

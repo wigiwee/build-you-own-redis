@@ -26,7 +26,7 @@ public class RequestHandler {
                     writer.flush();
                 }
             }
-        }catch(IOException e){
+        } catch (IOException e) {
             e.printStackTrace();
         }
     }
