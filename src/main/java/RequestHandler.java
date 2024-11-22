@@ -13,7 +13,7 @@ public class RequestHandler {
         this.clientSocket = clientSocket;
     }
 
-    public void run() throws IOException {
+    public void run() {
 
         try (
                 BufferedReader reader = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
@@ -24,9 +24,10 @@ public class RequestHandler {
                 if (content.equalsIgnoreCase("ping")) {
                     writer.write("+PONG\r\n");
                     writer.flush();
-                    writer.close();
                 }
             }
+        }catch(IOException e){
+            e.printStackTrace();
         }
     }
 }

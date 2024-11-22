@@ -26,15 +26,8 @@ public class Main {
             clientSocket = serverSocket.accept();
             while (true) {
                 RequestHandler requestHandler = new RequestHandler(clientSocket);
-                Thread.startVirtualThread(() -> {
-                    try {
-                        requestHandler.run();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                });
+                Thread.startVirtualThread(requestHandler::run);
             }
-
         } catch (IOException e) {
             System.out.println("IOException: " + e.getMessage());
         } finally {
