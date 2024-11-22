@@ -23,7 +23,7 @@ public class RequestHandler {
                 String[] contentArray = content.split(" ");
                 System.out.println("content: " + content);
                 if (contentArray[0].equalsIgnoreCase("echo")) {
-                    writer.write(contentArray[1]);
+                    writer.write(reader.readLine());
                     writer.flush();
                 }
                 if (contentArray[0].equalsIgnoreCase("ping")) {
