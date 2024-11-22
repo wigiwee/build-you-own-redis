@@ -17,7 +17,7 @@ public class Main {
             while ((content = reader.readLine()) != null) {
                 System.out.println("content: "+ content);
                 if(content.equalsIgnoreCase("ping")){
-                    writer.write("+PONG\\r\\n");
+                    writer.write("+PONG\r\n");
                     writer.flush();
                 }
             }
