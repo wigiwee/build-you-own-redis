@@ -19,12 +19,13 @@ public class Main {
         int port = 6379;
         try {
 
-            serverSocket = new ServerSocket(port);
-            serverSocket.setReuseAddress(true);
-
-            // Wait for connection from client.
-            clientSocket = serverSocket.accept();
             while (true) {
+                serverSocket = new ServerSocket(port);
+                serverSocket.setReuseAddress(true);
+    
+                // Wait for connection from client.
+                clientSocket = serverSocket.accept();
+    
                 RequestHandler requestHandler = new RequestHandler(clientSocket);
                 Thread.startVirtualThread(requestHandler::run);
             }
