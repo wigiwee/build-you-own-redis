@@ -20,8 +20,13 @@ public class RequestHandler {
                 BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(clientSocket.getOutputStream()));) {
             String content;
             while ((content = reader.readLine()) != null) {
+                String[] contentArray = content.split(" ");
                 System.out.println("content: " + content);
-                if (content.equalsIgnoreCase("ping")) {
+                if (contentArray[0].equalsIgnoreCase("echo")) {
+                    writer.write(contentArray[1]);
+                    writer.flush();
+                }
+                if (contentArray[0].equalsIgnoreCase("ping")) {
                     writer.write("+PONG\r\n");
                     writer.flush();
                 }
