@@ -60,6 +60,12 @@ public class RequestHandler {
             }
         } catch (IOException e) {
             e.printStackTrace();
+        }finally{
+            try {
+                clientSocket.close(); // Ensure socket is closed to avoid resource leaks
+            } catch (IOException e) {
+                System.out.println("Error closing socket: " + e.getMessage());
+            }
         }
     }
 }
