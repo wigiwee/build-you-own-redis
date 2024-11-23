@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.net.Socket;
+import java.util.Arrays;
 
 public class RequestHandler {
 
@@ -20,14 +21,42 @@ public class RequestHandler {
                 BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(clientSocket.getOutputStream()));) {
             String content;
             while ((content = reader.readLine()) != null) {
-                String[] contentArray = content.split(" ");
-                System.out.println("content: " + content);
-                if (contentArray[0].equalsIgnoreCase("echo")) {
-                    writer.write(reader.readLine());
-                    writer.flush();
-                }
-                if (contentArray[0].equalsIgnoreCase("ping")) {
-                    writer.write("+PONG\r\n");
+                // Parse the RESP array
+                System.out.println(content);
+                if (content.startsWith("*")) {
+                    int numArgs = Integer.parseInt(content.substring(1));
+                    System.out.println("numArgs " + numArgs);
+                    String[] args = new String[numArgs];
+                    for (int i = 0; i < numArgs; i++) {
+                        String lengthLine = reader.readLine();
+                        if (!lengthLine.startsWith("$")) {
+                            writer.write("-ERROR: Invalid RESP format\r\n");
+                            writer.flush();
+                            continue;
+                        }
+                        int length = Integer.parseInt(lengthLine.substring(1));
+                        args[i] = reader.readLine(); 
+                        if (args[i].length() != length) {
+                            writer.write("-ERROR: Length mismatch\r\n");
+                            writer.flush();
+                            continue;
+                        }
+                    }
+                    System.out.println(Arrays.toString(args));
+                    if (args[0].equalsIgnoreCase("ping")) {
+                        writer.write("+PONG\r\n");
+                        writer.flush();
+                    }   
+                    if (args[0].equalsIgnoreCase("echo") && numArgs == 2) {
+                        String message = args[1];
+                        writer.write("$" + message.length() + "\r\n" + message + "\r\n");
+                        writer.flush();
+                    } else {
+                        writer.write("-ERROR: Unknown command or incorrect arguments\r\n");
+                        writer.flush();
+                    }
+                } else {
+                    writer.write("-ERROR: Invalid RESP input\r\n");
                     writer.flush();
                 }
             }
