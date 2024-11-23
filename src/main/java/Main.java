@@ -15,6 +15,8 @@ public class Main {
                 dbfilename = args[3];
             }
         }
+        System.out.println(dir);
+        System.out.println(dbfilename);
 
         System.out.println("Logs from your program will appear here!");
         
