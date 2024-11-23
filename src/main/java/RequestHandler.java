@@ -58,7 +58,7 @@ public class RequestHandler {
                     writer.flush();
                 }
             }
-        } catch (IOException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }finally{
             try {
