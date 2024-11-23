@@ -1,19 +1,13 @@
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.HashMap;
 
 public class Main {
     
     public static void main(String[] args) {
-        // You can use print statements as follows for debugging, they'll be visible
-        // when running tests.
         System.out.println("Logs from your program will appear here!");
-
-        // Uncomment this block to pass the first stage
+        
         ServerSocket serverSocket = null;
         Socket clientSocket = null;
         int port = 6379;
@@ -23,7 +17,6 @@ public class Main {
             serverSocket.setReuseAddress(true);
             while (true) {
     
-                // Wait for connection from client.
                 clientSocket = serverSocket.accept();
     
                 RequestHandler requestHandler = new RequestHandler(clientSocket);

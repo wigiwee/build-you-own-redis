@@ -5,10 +5,13 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.net.Socket;
 import java.util.Arrays;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class RequestHandler {
 
     private Socket clientSocket;
+
+    static ConcurrentHashMap<String, String> hashMap = new ConcurrentHashMap<>();
 
     public RequestHandler(Socket clientSocket) {
         this.clientSocket = clientSocket;
@@ -44,6 +47,19 @@ public class RequestHandler {
                     if (args[0].equalsIgnoreCase("ping")) {
                         writer.write("+PONG\r\n");
                         writer.flush();
+                    }else if (args[0].equalsIgnoreCase("set") && numArgs == 3) {
+                        hashMap.put(args[1], args[2]);
+                        writer.write("+OK\r\n");
+                        writer.flush();
+                    }else if (args[0].equalsIgnoreCase("get") && numArgs == 2) {
+                        if(hashMap.containsKey(args[1])){
+                            String value = hashMap.get(args[1]);
+                            writer.write("$" + value.length() + "\r\n" + value + "\r\n");
+                            writer.flush();
+                        }else{
+                            writer.write("-ERROR: Unknown key\r\n");
+                            writer.flush();    
+                        }
                     }else if (args[0].equalsIgnoreCase("echo") && numArgs == 2) {
                         String message = args[1];
                         writer.write("$" + message.length() + "\r\n" + message + "\r\n");
