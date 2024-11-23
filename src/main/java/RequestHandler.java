@@ -40,6 +40,7 @@ public class RequestHandler {
                             continue;
                         }
                     }
+                    System.out.println(Arrays.toString(args));
                     if (args[0].equalsIgnoreCase("ping")) {
                         writer.write("+PONG\r\n");
                         writer.flush();
