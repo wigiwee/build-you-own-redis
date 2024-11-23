@@ -22,10 +22,8 @@ public class RequestHandler {
             String content;
             while ((content = reader.readLine()) != null) {
                 // Parse the RESP array
-                System.out.println(content);
                 if (content.startsWith("*")) {
                     int numArgs = Integer.parseInt(content.substring(1));
-                    System.out.println("numArgs " + numArgs);
                     String[] args = new String[numArgs];
                     for (int i = 0; i < numArgs; i++) {
                         String lengthLine = reader.readLine();
@@ -42,7 +40,6 @@ public class RequestHandler {
                             continue;
                         }
                     }
-                    System.out.println(Arrays.toString(args));
                     if (args[0].equalsIgnoreCase("ping")) {
                         writer.write("+PONG\r\n");
                         writer.flush();
