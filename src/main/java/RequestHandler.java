@@ -10,11 +10,20 @@ import java.util.concurrent.ConcurrentHashMap;
 public class RequestHandler {
 
     private Socket clientSocket;
-
+    public static String CRLF = "\r\n";
     static ConcurrentHashMap<String, HashMapValue> hashMap = new ConcurrentHashMap<>();
 
     public RequestHandler(Socket clientSocket) {
         this.clientSocket = clientSocket;
+    }
+
+    static String encodeArray(String[] inputArray) {
+        StringBuilder output = new StringBuilder("");
+        output.append("*").append(inputArray.length).append(CRLF);
+        for (int i = 0; i < inputArray.length; i++) {
+            output.append("$").append(inputArray[i].length()).append(CRLF).append(inputArray[i]).append(CRLF);
+        }
+        return output.toString();
     }
 
     public void run() {
@@ -63,14 +72,30 @@ public class RequestHandler {
                         writer.write("+OK\r\n");
                         writer.flush();
 
+                    } else if (args[0].equalsIgnoreCase("config")) {
+                        if (args[1].equalsIgnoreCase("get")) {
+                            if (args[2].equalsIgnoreCase("dir")) {
+                                writer.write(encodeArray(new String[] { "dir", Main.dir }));
+                                writer.flush();
+                            } else if (args[2].equalsIgnoreCase("dbfilename")) {
+                                writer.write(encodeArray(new String[] { "dbfilename", Main.dbfilename }));
+                                writer.flush();
+                            } else {
+                                writer.write("-ERROR: Unknown configuration key arguments\r\n");
+                                writer.flush();
+                            }
+                        } else {
+                            writer.write("-ERROR: Unknown command or incorrect arguments\r\n");
+                            writer.flush();
+                        }
                     } else if (args[0].equalsIgnoreCase("get") && numArgs == 2) {
                         if (hashMap.containsKey(args[1])) {
                             HashMapValue obj = hashMap.get(args[1]);
-                            if(obj.expiry == -1){
-                                writer.write("$"+obj.value.length()+"\r\n"+ obj.value+"\r\n");
+                            if (obj.expiry == -1) {
+                                writer.write("$" + obj.value.length() + CRLF + obj.value + CRLF);
                                 writer.flush();
                             } else if (System.currentTimeMillis() < obj.expiry) {
-                                writer.write("$" + obj.value.length() + "\r\n" + obj.value + "\r\n");
+                                writer.write("$" + obj.value.length() + CRLF + obj.value + CRLF);
                                 writer.flush();
                             } else {
                                 writer.write("$-1\r\n");
@@ -80,7 +105,7 @@ public class RequestHandler {
 
                     } else if (args[0].equalsIgnoreCase("echo") && numArgs == 2) {
                         String message = args[1];
-                        writer.write("$" + message.length() + "\r\n" + message + "\r\n");
+                        writer.write("$" + message.length() + CRLF + message + CRLF);
                         writer.flush();
 
                     } else {

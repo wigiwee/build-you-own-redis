@@ -1,11 +1,19 @@
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.HashMap;
 
 public class Main {
     
+    static String dir = "";
+    static String dbfilename = "";
     public static void main(String[] args) {
+
+        if(args[0].equals("--dir")){
+            dir = args[1];
+        }else if (args[2].equals("--dbfilename")){
+            dbfilename = args[3];
+        }
+
         System.out.println("Logs from your program will appear here!");
         
         ServerSocket serverSocket = null;
