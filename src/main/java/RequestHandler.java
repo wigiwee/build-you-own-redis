@@ -44,8 +44,7 @@ public class RequestHandler {
                     if (args[0].equalsIgnoreCase("ping")) {
                         writer.write("+PONG\r\n");
                         writer.flush();
-                    }   
-                    if (args[0].equalsIgnoreCase("echo") && numArgs == 2) {
+                    }else if (args[0].equalsIgnoreCase("echo") && numArgs == 2) {
                         String message = args[1];
                         writer.write("$" + message.length() + "\r\n" + message + "\r\n");
                         writer.flush();
