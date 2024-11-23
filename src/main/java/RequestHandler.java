@@ -66,16 +66,16 @@ public class RequestHandler {
                     } else if (args[0].equalsIgnoreCase("get") && numArgs == 2) {
                         if (hashMap.containsKey(args[1])) {
                             HashMapValue obj = hashMap.get(args[1]);
-                            if (System.currentTimeMillis() < obj.expiry) {
+                            if(obj.expiry == -1){
+                                writer.write("$"+obj.value.length()+"\r\n"+ obj.value+"\r\n");
+                                writer.flush();
+                            } else if (System.currentTimeMillis() < obj.expiry) {
                                 writer.write("$" + obj.value.length() + "\r\n" + obj.value + "\r\n");
                                 writer.flush();
                             } else {
                                 writer.write("$-1\r\n");
                                 writer.flush();
                             }
-                        } else {
-                            writer.write("-ERROR: Unknown key\r\n");
-                            writer.flush();
                         }
 
                     } else if (args[0].equalsIgnoreCase("echo") && numArgs == 2) {
