@@ -8,10 +8,11 @@ public class Main {
     static String dbfilename = "";
     public static void main(String[] args) {
 
-        if(args.length > 4){
+        if(args.length >=4 ){
             if(args[0].equals("--dir")){
                 dir = args[1];
-            }else if (args[2].equals("--dbfilename")){
+            }
+            if (args[2].equals("--dbfilename")){
                 dbfilename = args[3];
             }
         }
