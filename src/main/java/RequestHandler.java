@@ -1,22 +1,45 @@
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.net.Socket;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class RequestHandler {
 
     private Socket clientSocket;
-    public static String CRLF = "\r\n";
+    public final static String CRLF = "\r\n";
     static ConcurrentHashMap<String, HashMapValue> hashMap = new ConcurrentHashMap<>();
 
     public RequestHandler(Socket clientSocket) {
         this.clientSocket = clientSocket;
     }
 
+    static int sizeEncoding(InputStream fis) throws IOException{
+        int b = fis.read();     //reading first byte
+        int length = 00;
+        int first2bits = b & 11000000;
+        if(first2bits == 00000000){
+            length = b;
+        }else if(first2bits == 01000000){
+            int nextByte = fis.read();
+            int lsb6 = b & 00111111;
+            int shiftby6bits = lsb6 << 8;       //shift by 8 bits to make space of next 8 bits of second byte;
+            length = shiftby6bits | (nextByte & 0xFF);
+        }else if(first2bits == 10000000){   //combining next 4 bytes to form the length 
+            length = ((fis.read() & 0xFF) << 24) |
+                    ((fis.read() & 0xFF) << 16) |
+                    ((fis.read() & 0xFF) << 8) |
+                    ((fis.read() & 0xFF));
+        }
+        return length;
+    }
     static String encodeArray(String[] inputArray) {
         StringBuilder output = new StringBuilder("");
         output.append("*").append(inputArray.length).append(CRLF);
@@ -88,6 +111,65 @@ public class RequestHandler {
                             writer.write("-ERROR: Unknown command or incorrect arguments\r\n");
                             writer.flush();
                         }
+                    }else if(args[0].equalsIgnoreCase("keys")){
+                        if(Main.dir.isEmpty() || Main.dbfilename.isEmpty()){
+                            writer.write("-ERROR: Unknown command or incorrect arguments\r\n");
+                            writer.flush();
+                        }
+                        try(InputStream fis = new FileInputStream(new File(Main.dir, Main.dbfilename))){
+                            byte[] redis = new byte[5];
+                            byte[] version = new byte[4];
+
+                            fis.read(redis);
+                            fis.read(version);
+
+                            System.out.println("Magic String: "+ new String(redis, StandardCharsets.UTF_8));
+                            System.out.println("Magic String: "+ new String(version, StandardCharsets.UTF_8));
+                            if(args[1].equals("*")){
+                                int bytee;
+                                while((bytee = fis.read()) != -1){
+                                    if(bytee == 0xFB){
+                                        sizeEncoding(fis);
+                                        sizeEncoding(fis);
+                                        break;        
+                                    }
+                                    int type = fis.read();
+                                    int len = sizeEncoding(fis);
+
+                                    byte[] key_bytes = new byte[len];
+                                    fis.read(key_bytes);
+
+                                    String parsed_key = new String(key_bytes);
+                                    writer.write("*1\r\n$" + parsed_key.length() + "\r\n" + parsed_key + "\r\n");
+                                    writer.flush();
+                                    break;
+                                }
+                            }
+                            // int b;
+                            // while ((b = fis.read()) != -1){
+                            //     switch (b) {
+                            //         case 0xFF:
+                            //             System.out.println("EOF");
+                            //             break;
+                            //         case 0xFA: 
+                            //             System.out.println("Metadata section");
+                            //         case 0xFE:
+                            //             System.out.println("SELECTDB");
+                            //         case 0xFB:
+                            //             System.out.println("RESIZEDB");
+                            //         case 0xFD:
+                            //             System.out.println("EXPIRETIMEMS");
+                            //         case 0xFC:
+                            //             System.out.println("EXPIRETIME");
+                            //         default:
+                            //             break;
+                            //     }
+                            // }
+
+
+                        }
+
+
                     } else if (args[0].equalsIgnoreCase("get") && numArgs == 2) {
                         if (hashMap.containsKey(args[1])) {
                             HashMapValue obj = hashMap.get(args[1]);
