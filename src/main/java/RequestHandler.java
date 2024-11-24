@@ -43,56 +43,55 @@ public class RequestHandler {
         return length;
     }
 
-    static int sizeEncoding(InputStream inputStream) throws IOException {
-        // int b = fis.read(); //reading first byte
-        // int length = 00;
-        // int first2bits = b & 11000000;
-        // if(first2bits == 00000000){
-        // length = b;
-        // }else if(first2bits == 01000000){
-        // int nextByte = fis.read();
-        // int lsb6 = b & 00111111;
-        // int shiftby6bits = lsb6 << 8; //shift by 8 bits to make space of next 8 bits
-        // of second byte;
-        // length = shiftby6bits | (nextByte & 0xFF);
-        // }else if(first2bits == 10000000){ //combining next 4 bytes to form the length
-        // length = ((fis.read() & 0xFF) << 24) |
-        // ((fis.read() & 0xFF) << 16) |
-        // ((fis.read() & 0xFF) << 8) |
-        // ((fis.read() & 0xFF));
-        // }
-        // return length;
-        int read;
-
-        read = inputStream.read();
-
-        int len_encoding_bit = (read & 0b11000000) >> 6;
-
-        int len = 0;
-
-        // System.out.println("bit: " + (read & 0x11000000));
-
-        if (len_encoding_bit == 0) {
-
-            len = read & 0b00111111;
-
-        } else if (len_encoding_bit == 1) {
-
-            int extra_len = inputStream.read();
-
-            len = ((read & 0b00111111) << 8) + extra_len;
-
-        } else if (len_encoding_bit == 2) {
-
-            byte[] extra_len = new byte[4];
-
-            inputStream.read(extra_len);
-
-            len = ByteBuffer.wrap(extra_len).getInt();
-
+    static int sizeEncoding(InputStream fis) throws IOException {
+        int b = fis.read(); // reading first byte
+        int length = 00;
+        int first2bits = b & 11000000;
+        if (first2bits == 00000000) {
+            length = b;
+        } else if (first2bits == 01000000) {
+            int nextByte = fis.read();
+            int lsb6 = b & 00111111;
+            int shiftby6bits = lsb6 << 8; // shift by 8 bits to make space of next 8 bits of second byte;
+            length = shiftby6bits | (nextByte & 0xFF);
+        } else if (first2bits == 10000000) { // combining next 4 bytes to form the length
+            length = ((fis.read() & 0xFF) << 24) |
+                    ((fis.read() & 0xFF) << 16) |
+                    ((fis.read() & 0xFF) << 8) |
+                    ((fis.read() & 0xFF));
         }
+        return length;
+        // int read;
 
-        return len;
+        // read = inputStream.read();
+
+        // int len_encoding_bit = (read & 0b11000000) >> 6;
+
+        // int len = 0;
+
+        // // System.out.println("bit: " + (read & 0x11000000));
+
+        // if (len_encoding_bit == 0) {
+
+        // len = read & 0b00111111;
+
+        // } else if (len_encoding_bit == 1) {
+
+        // int extra_len = inputStream.read();
+
+        // len = ((read & 0b00111111) << 8) + extra_len;
+
+        // } else if (len_encoding_bit == 2) {
+
+        // byte[] extra_len = new byte[4];
+
+        // inputStream.read(extra_len);
+
+        // len = ByteBuffer.wrap(extra_len).getInt();
+
+        // }
+
+        // return len;
     }
 
     static String encodeArray(String[] inputArray) {
@@ -162,6 +161,33 @@ public class RequestHandler {
                             writer.write("-ERROR: Unknown command or incorrect arguments\r\n");
                             writer.flush();
                         }
+                    } else if (args[0].equalsIgnoreCase("get") && numArgs == 2) {
+                        if (keyValueHashMap.containsKey(args[1])) {
+                            if (keyExpiryHashMap.containsKey(args[1])) {
+                                if (System.currentTimeMillis() < keyExpiryHashMap.get(args[1])) {
+                                    writer.write("$" + keyValueHashMap.get(args[1]).length() + CRLF
+                                            + keyValueHashMap.get(args[1]) + CRLF);
+                                    writer.flush();
+                                } else {
+                                    keyExpiryHashMap.remove(args[1]);
+                                    keyValueHashMap.remove(args[1]);
+                                }
+                            } else {
+                                System.out.println(keyValueHashMap.get(args[1]));
+                                writer.write("$" + keyValueHashMap.get(args[1]).length() + CRLF
+                                        + keyValueHashMap.get(args[1]) + CRLF);
+                                writer.flush();
+                            }
+                        } else {
+                            writer.write("$-1\r\n");
+                            writer.flush();
+                        }
+
+                    } else if (args[0].equalsIgnoreCase("echo") && numArgs == 2) {
+                        String message = args[1];
+                        writer.write("$" + message.length() + CRLF + message + CRLF);
+                        writer.flush();
+
                     } else if (args[0].equalsIgnoreCase("keys")) {
                         if (Main.dir.isEmpty() || Main.dbfilename.isEmpty()) {
                             writer.write("-ERROR: Unknown command or incorrect arguments\r\n");
@@ -179,80 +205,36 @@ public class RequestHandler {
 
                             int bytee;
                             while ((bytee = fis.read()) != -1) {
-                                System.out.println("I am here");
                                 if (bytee == 0xFB) {
-                                    System.out.println("I am in FB");
                                     int hastTableSize = sizeEncoding(fis);
-                                    System.out.println("hash table size: " + hastTableSize);//correct
                                     int exipryKeyHashTable = sizeEncoding(fis);
-                                    System.out.println("expiry table size:" +exipryKeyHashTable); //correct
                                     for (int i = 0; i < hastTableSize; i++) {
                                         int b = fis.read();
-                                        int valueType ;
+                                        int valueType;
                                         if (b == 0xFC) {
                                             byte[] expiryTimeUnixFormat = new byte[8];
                                             fis.read(expiryTimeUnixFormat);
                                             valueType = fis.read();
-                                        }else if (b == 0xFD) {
+                                        } else if (b == 0xFD) {
                                             byte[] expiryTime = new byte[4];
                                             fis.read(expiryTime);
                                             valueType = fis.read();
-                                        }else{
+                                        } else {
                                             valueType = b;
-                                            System.out.println("value type:  " + valueType);
                                         }
                                         int keyLength = fis.read();
-                                        System.out.println(keyLength);
-                                        System.out.println(keyLength);
                                         byte[] key = new byte[keyLength];
                                         fis.read(key);
                                         String keyStr = new String(key, StandardCharsets.UTF_8);
-                                        System.out.println("key: " + keyStr);
-                                        System.out.println("I came here " + keyStr);
                                         String[] keyArray = new String[hastTableSize];
                                         keyArray[0] = keyStr;
-                                        writer.write(encodeArray(new String[] { keyStr}));
-                                        writer.flush();   
+                                        writer.write(encodeArray(new String[] { keyStr }));
+                                        writer.flush();
                                     }
 
                                 }
                             }
                         }
-                        // if (args[1].equalsIgnoreCase("*")) {
-                        //     String[] keys = (String[]) keyValueHashMap.keySet().toArray();
-                        //     System.out.println(Arrays.toString(keys));
-                        //     writer.write(encodeArray(keys));
-                        //     writer.flush();
-                        //     ;
-
-                        // }
-
-                    } else if (args[0].equalsIgnoreCase("get") && numArgs == 2) {
-                        if (keyValueHashMap.contains(args[1])) {
-                            if (keyExpiryHashMap.contains(args[1])) {
-                                if (System.currentTimeMillis() < keyExpiryHashMap.get(args[1])) {
-                                    writer.write("$" + keyValueHashMap.get(args[1]).length() + CRLF
-                                            + keyValueHashMap.get(args[1]) + CRLF);
-                                    writer.flush();
-                                } else {
-                                    keyExpiryHashMap.remove(args[1]);
-                                    keyValueHashMap.remove(args[1]);
-                                }
-                            } else {
-                                writer.write("$" + keyValueHashMap.get(args[1]).length() + CRLF
-                                        + keyValueHashMap.get(args[1]) + CRLF);
-                                writer.flush();
-                            }
-                        } else {
-                            writer.write("$-1\r\n");
-                            writer.flush();
-                        }
-
-                    } else if (args[0].equalsIgnoreCase("echo") && numArgs == 2) {
-                        String message = args[1];
-                        writer.write("$" + message.length() + CRLF + message + CRLF);
-                        writer.flush();
-
                     } else {
                         writer.write("-ERROR: Unknown command or incorrect arguments\r\n");
                         writer.flush();
