@@ -138,7 +138,7 @@ public class RequestHandler {
                             if (RdbFile.RDBkeyExpiryHashMap.containsKey(args[1])) {
                                 if (System.currentTimeMillis() < RdbFile.RDBkeyExpiryHashMap.get(args[1])) {
                                     writer.write("$" + RdbFile.RDBkeyValueHashMap.get(args[1]).length() + CRLF
-                                            + RdbFile.RDBkeyExpiryHashMap.get(args[1]) + CRLF);
+                                            + RdbFile.RDBkeyValueHashMap.get(args[1]) + CRLF);
                                     writer.flush();
                                 } else {
                                     writer.write("$-1" + CRLF);
