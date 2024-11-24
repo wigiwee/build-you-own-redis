@@ -182,6 +182,7 @@ public class RequestHandler {
                         }
                         // System.out.println(output.toString());
                         writer.write("$" + output.length() + Config.CRLF + output.toString());
+                        writer.flush();
 
                     } else {
 
