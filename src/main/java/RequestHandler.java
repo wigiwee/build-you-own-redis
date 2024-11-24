@@ -198,9 +198,9 @@ public class RequestHandler {
                                         int keyLength = fis.read();
                                         byte[] key = new byte[keyLength];
                                         String keyStr = new String(key);
-                                        System.out.println(keyStr);
                                         // System.out.println("key: " + new String(key));
                                         fis.read(key);
+                                        System.out.println("I came here");
                                         writer.write(encodeArray(new String[] { keyStr}));
                                         break;
                                         
