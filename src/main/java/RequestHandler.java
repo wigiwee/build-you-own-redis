@@ -186,9 +186,13 @@ public class RequestHandler {
                         }
 
                     } else if (args[0].equalsIgnoreCase("info")){
-
-                        writer.write(bulkString("role:master"));
-                        writer.flush();
+                        if(Main.hostPort == -1 &&  Main.hostname.isBlank()){
+                            writer.write(bulkString("role:master"));
+                            writer.flush();
+                        }else{
+                            writer.write(bulkString("role:slave"));
+                            writer.flush();
+                        }
 
                     } else {
                         writer.write("-ERROR: Unknown command or incorrect arguments\r\n");

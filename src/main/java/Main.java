@@ -7,16 +7,11 @@ public class Main {
     static String dir = "";
     static String dbfilename = "";
     static int port = 6379;
+    static String hostname = "";
+    static int hostPort = -1;
+
     public static void main(String[] args) {
 
-        if(args.length >=4 ){
-            if(args[0].equals("--dir")){
-                dir = args[1];
-            }
-            if (args[2].equals("--dbfilename")){
-                dbfilename = args[3];
-            }
-        }
         for(int i = 0 ; i < args.length; i+=2){
             if(args[i].equals("--dir")){
                 dir= args[i+1];
@@ -24,10 +19,14 @@ public class Main {
                 dbfilename = args[i+1];
             }else if(args[i].equals("--port")){
                 port = Integer.parseInt(args[i+1]);
+            }else if( args[i].equals("--replicaof")){
+                String value = args[i+1];
+                String trimQuotation = value.substring(1, value.length());
+                String[] strArray = trimQuotation.split(" ");
+                hostname =  strArray[0];
+                hostPort = Integer.parseInt(strArray[1]);
             }
         }
-        System.out.println(dir);
-        System.out.println(dbfilename);
 
         System.out.println("Logs from your program will appear here!");
         
