@@ -1,6 +1,11 @@
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.UnknownHostException;
 
 public class Main {
     
@@ -10,7 +15,16 @@ public class Main {
     static String hostname = "";
     static int hostPort = -1;
 
-    public static void main(String[] args) {
+
+    static void handshake() throws UnknownHostException, IOException{
+        Socket socket = new Socket(hostname, hostPort);
+        BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
+        BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+
+        writer.write(RequestHandler.bulkString("PING"));
+        System.out.println(reader.readLine());
+    }
+    public static void main(String[] args) throws UnknownHostException, IOException {
 
         for(int i = 0 ; i < args.length; i+=2){
             if(args[i].equals("--dir")){
@@ -26,6 +40,9 @@ public class Main {
                 hostname =  strArray[0];
                 hostPort = Integer.parseInt(strArray[1]);
             }
+        }
+        if(hostPort !=-1 && !hostname.isEmpty()){
+            handshake();
         }
         System.out.println(hostname);
         System.out.println("Logs from your program will appear here!");
