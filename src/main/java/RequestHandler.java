@@ -10,13 +10,18 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class RequestHandler {
 
-    private Socket clientSocket;
-    public final static String CRLF = "\r\n";
+    public Socket clientSocket;
+    final static String CRLF = "\r\n";
     static ConcurrentHashMap<String, String> keyValueHashMap = new ConcurrentHashMap<>();
     static ConcurrentHashMap<String, Long> keyExpiryHashMap = new ConcurrentHashMap<>();
-
+    static final String NIL = "$-1" + CRLF;
+    
     public RequestHandler(Socket clientSocket) {
         this.clientSocket = clientSocket;
+    }
+
+    static String bulkString(String str){
+        return "$" + str.length() + CRLF + str + CRLF;
     }
 
     static int stringEncoding(InputStream fis) throws IOException {
@@ -103,7 +108,7 @@ public class RequestHandler {
 
                     } else if (args[0].equalsIgnoreCase("echo") && numArgs == 2) {
                         String message = args[1];
-                        writer.write("$" + message.length() + CRLF + message + CRLF);
+                        writer.write(bulkString(message));
                         writer.flush();
 
                     } else if (args[0].equalsIgnoreCase("set") && numArgs >= 3) {
@@ -120,38 +125,34 @@ public class RequestHandler {
                         if (keyValueHashMap.containsKey(args[1])) {
                             if (keyExpiryHashMap.containsKey(args[1])) {
                                 if (System.currentTimeMillis() < keyExpiryHashMap.get(args[1])) {
-                                    writer.write("$" + keyValueHashMap.get(args[1]).length() + CRLF
-                                            + keyValueHashMap.get(args[1]) + CRLF);
+                                    writer.write(keyValueHashMap.get(args[1]));
                                     writer.flush();
                                 } else {
                                     keyExpiryHashMap.remove(args[1]);
                                     keyValueHashMap.remove(args[1]);
-                                    writer.write("$-1\r\n");
+                                    writer.write(NIL);
                                     writer.flush();
                                 }
                             } else {
-                                writer.write("$" + keyValueHashMap.get(args[1]).length() + CRLF
-                                        + keyValueHashMap.get(args[1]) + CRLF);
+                                writer.write(bulkString(keyValueHashMap.get(args[1])));
                                 writer.flush();
                             }
                         } else if (RdbFile.RDBkeyValueHashMap.containsKey(args[1])) {
                             if (RdbFile.RDBkeyExpiryHashMap.containsKey(args[1])) {
                                 if (System.currentTimeMillis() < RdbFile.RDBkeyExpiryHashMap.get(args[1])) {
-                                    writer.write("$" + RdbFile.RDBkeyValueHashMap.get(args[1]).length() + CRLF
-                                            + RdbFile.RDBkeyValueHashMap.get(args[1]) + CRLF);
+                                    writer.write(bulkString(RdbFile.RDBkeyValueHashMap.get(args[1])));
                                     writer.flush();
                                 } else {
-                                    writer.write("$-1" + CRLF);
+                                    writer.write(NIL);
                                     writer.flush();
                                 }
                             } else {
-                                writer.write("$" + RdbFile.RDBkeyValueHashMap.get(args[1]).length() + CRLF
-                                        + RdbFile.RDBkeyValueHashMap.get(args[1]) + CRLF);
+                                writer.write(bulkString(bulkString(RdbFile.RDBkeyValueHashMap.get(args[1]))));
                                 writer.flush();
                             }
                             
                         } else {
-                            writer.write("$-1\r\n");
+                            writer.write(NIL);
                             writer.flush();
                         }
 
@@ -183,6 +184,11 @@ public class RequestHandler {
                                 writer.flush();
                             }
                         }
+
+                    } else if (args[0].equalsIgnoreCase("info")){
+
+                        writer.write(bulkString("role:master"));
+                        writer.flush();
 
                     } else {
                         writer.write("-ERROR: Unknown command or incorrect arguments\r\n");
