@@ -6,6 +6,7 @@ public class Main {
     
     static String dir = "";
     static String dbfilename = "";
+    static int port = 6379;
     public static void main(String[] args) {
 
         if(args.length >=4 ){
@@ -16,6 +17,15 @@ public class Main {
                 dbfilename = args[3];
             }
         }
+        for(int i = 0 ; i < args.length; i+=2){
+            if(args[i].equals("--dir")){
+                dir= args[i+1];
+            }else if( args[i].equals("--dbfilenam")){
+                dbfilename = args[i+1];
+            }else if(args[i].equals("--port")){
+                port = Integer.getInteger(args[i+1]);
+            }
+        }
         System.out.println(dir);
         System.out.println(dbfilename);
 
@@ -23,7 +33,6 @@ public class Main {
         
         ServerSocket serverSocket = null;
         Socket clientSocket = null;
-        int port = 6379;
         try {
 
             serverSocket = new ServerSocket(port);
