@@ -158,9 +158,10 @@ public class RequestHandler {
                                             fis.read(expiryTime);
                                         }
                                         int valueType = fis.read();
-
+                                        System.out.println("valuetype: " +valueType);
                                         int keyLength = fis.read();
                                         byte[] key = new byte[keyLength];
+                                        System.out.println("key: " + new String(key));
                                         fis.read(key);
                                         int valueLength = fis.read();
                                         byte[] value = new byte[valueLength];
