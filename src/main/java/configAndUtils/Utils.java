@@ -71,6 +71,7 @@ public class Utils {
         output.append(Config.CRLF);
         for (String string : strArr) {
             output.append("$").append(string.length());
+            output.append(Config.CRLF);
             output.append(string);
             output.append(Config.CRLF);
         }
