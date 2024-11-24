@@ -181,7 +181,7 @@ public class RequestHandler {
                             output.append(Integer.toBinaryString(b));
                         }
                         // System.out.println(output.toString());
-                        writer.write("$" + output.length() + Config.CRLF + output.toString());
+                        writer.write("$" + contents.length/2 + Config.CRLF + output.toString());
                         writer.flush();
 
                     } else {
