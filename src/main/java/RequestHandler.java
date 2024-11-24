@@ -209,6 +209,8 @@ public class RequestHandler {
                                         String keyStr = new String(key, StandardCharsets.UTF_8);
                                         System.out.println("key: " + keyStr);
                                         System.out.println("I came here " + keyStr);
+                                        String[] keyArray = new String[hastTableSize];
+                                        keyArray[0] = keyStr;
                                         writer.write(encodeArray(new String[] { keyStr}));
                                         break;
                                         
