@@ -100,11 +100,13 @@ public class Utils {
         System.out.println(reader.readLine());
 
         writer.write(RESP2format("REPLCONF listening-port "+ Config.port));
+        writer.flush();
         System.out.println(reader.readLine());
 
         writer.write(RESP2format("REPLCONF capa psync2"));
+        writer.flush();
         System.out.println(reader.readLine());
 
-        
+
     }
 }
