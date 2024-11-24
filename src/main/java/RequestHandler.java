@@ -212,10 +212,8 @@ public class RequestHandler {
                                         String[] keyArray = new String[hastTableSize];
                                         keyArray[0] = keyStr;
                                         writer.write(encodeArray(new String[] { keyStr}));
-                                        break;
-                                        
+                                        writer.flush();   
                                     }
-                                    break;
 
                                 }
                             }
