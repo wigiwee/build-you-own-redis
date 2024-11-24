@@ -23,7 +23,7 @@ public class Main {
             }else if( args[i].equals("--dbfilenam")){
                 dbfilename = args[i+1];
             }else if(args[i].equals("--port")){
-                port = Integer.getInteger(args[i+1]);
+                port = Integer.parseInt(args[i+1]);
             }
         }
         System.out.println(dir);
