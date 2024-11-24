@@ -184,11 +184,15 @@ public class RequestHandler {
                         // }
                         String rdbHex = "524544495330303131fa0972656469732d76657205372e322e30fa0a72656469732d62697473c040fa056374696d65c26d08bc65fa08757365642d6d656dc2b0c41000fa08616f662d62617365c000fff06e3bfec0ff5aa2";
                         byte[] rdbContent = new BigInteger(rdbHex, 16).toByteArray();
+                        StringBuilder output = new StringBuilder();
+                        for (byte b : rdbContent ) {
+                            output.append(b);
+                            
+                        }
 
-                        // writer.write("$" + rdbContent.length + Config.CRLF + /*what to write here */);
+                        writer.write("$" + rdbContent.length + Config.CRLF + output.toString());
                         // writer.flush();
                         // writer.write("$88\r\n524544495330303131fa0972656469732d76657205372e322e30fa0a72656469732d62697473c040fa056374696d65c26d08bc65fa08757365642d6d656dc2b0c41000fa08616f662d62617365c000fff06e3bfec0ff5aa2");
-                        writer.write("$0\r\n");
                         writer.flush();
                     } else {
 
