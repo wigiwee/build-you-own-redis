@@ -69,7 +69,7 @@ public class RequestHandler {
     }
 
     public void run() throws IOException {
-        
+
         RdbFile.refreshRDBFile();
         try (
                 BufferedReader reader = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
@@ -176,17 +176,17 @@ public class RequestHandler {
                             writer.flush();
                         }
                     } else if (args[0].equalsIgnoreCase("keys")) {
-                        // if (!Main.dbfilename.isEmpty()) {
-                        //     writer.write("-ERROR: RDB File not found\r\n");
-                        //     writer.flush();
-                        // } else {
+                        if (Main.dbfilename.isEmpty() && Main.dir.isEmpty()) {
+                            writer.write("-ERROR: RDB File not found\r\n");
+                            writer.flush();
+                        } else {
 
                             if (args[1].equals("*")) {
                                 System.out.println("keys: " + Arrays.toString(RdbFile.getKeys()));
                                 writer.write(encodeArray(RdbFile.getKeys()));
                                 writer.flush();
                             }
-                        // }
+                        }
 
                     } else {
                         writer.write("-ERROR: Unknown command or incorrect arguments\r\n");
