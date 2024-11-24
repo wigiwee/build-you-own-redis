@@ -197,6 +197,8 @@ public class RequestHandler {
                                         // System.out.println("valuetype: " + valueType);
                                         int keyLength = fis.read();
                                         byte[] key = new byte[keyLength];
+                                        String keyStr = new String(key);
+                                        System.out.println(keyStr);
                                         // System.out.println("key: " + new String(key));
                                         fis.read(key);
                                         int valueLength = fis.read();
