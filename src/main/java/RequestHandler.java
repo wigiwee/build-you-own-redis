@@ -178,12 +178,12 @@ public class RequestHandler {
                         }
                     } else if (args[0].equalsIgnoreCase("keys")) {
                         if (!Main.dir.isEmpty() && !Main.dbfilename.isEmpty()) {
-                            writer.write("-ERROR: Unknown command or incorrect arguments\r\n");
+                            writer.write("-ERROR: RDB File not found\r\n");
                             writer.flush();
                         } else {
 
                             if (args[1].equals("*")) {
-                                System.out.println(Arrays.toString(RdbFile.getKeys()));
+                                System.out.println("keys: " + Arrays.toString(RdbFile.getKeys()));
                                 writer.write(encodeArray(RdbFile.getKeys()));
                                 writer.flush();
                             }
