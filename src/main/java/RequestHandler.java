@@ -8,73 +8,22 @@ import java.net.Socket;
 import java.util.Arrays;
 import java.util.concurrent.ConcurrentHashMap;
 
+import configAndUtils.Config;
+import configAndUtils.RdbUtils;
+import configAndUtils.Utils;
+
 public class RequestHandler {
 
     public Socket clientSocket;
-    final static String CRLF = "\r\n";
     static ConcurrentHashMap<String, String> keyValueHashMap = new ConcurrentHashMap<>();
     static ConcurrentHashMap<String, Long> keyExpiryHashMap = new ConcurrentHashMap<>();
-    static final String NIL = "$-1" + CRLF;
     
     public RequestHandler(Socket clientSocket) {
         this.clientSocket = clientSocket;
     }
 
-    static String bulkString(String str){
-        return "$" + str.length() + CRLF + str + CRLF;
-    }
-
-    static int stringEncoding(InputStream fis) throws IOException {
-        int length = 0;
-        int b = fis.read();
-        int first2Byte = b & 11000000;
-        if (first2Byte == 0x00) {
-            length = b & 00111111;
-        } else if (first2Byte == 0xC0) {
-            length = 8;
-        } else if (first2Byte == 0xC1) {
-
-        } else if (first2Byte == 0xC2) {
-
-        } else if (first2Byte == 0xC3) {
-            // LZF algorithm
-
-        }
-
-        return length;
-    }
     
-    static int sizeEncoding(InputStream fis) throws IOException {
-        int b = fis.read(); // reading first byte
-        int length = 00;
-        int first2bits = b & 11000000;
-        if (first2bits == 00000000) {
-            length = b;
-        } else if (first2bits == 01000000) {
-            int nextByte = fis.read();
-            int lsb6 = b & 00111111;
-            int shiftby6bits = lsb6 << 8; // shift by 8 bits to make space of next 8 bits of second byte;
-            length = shiftby6bits | (nextByte & 0xFF);
-        } else if (first2bits == 10000000) { // combining next 4 bytes to form the length
-            length = ((fis.read() & 0xFF) << 24) |
-                    ((fis.read() & 0xFF) << 16) |
-                    ((fis.read() & 0xFF) << 8) |
-                    ((fis.read() & 0xFF));
-        }
-        return length;
-    }
-
-    static String encodeArray(String[] inputArray) {
-        StringBuilder output = new StringBuilder("");
-        output.append("*").append(inputArray.length).append(CRLF);
-        for (int i = 0; i < inputArray.length; i++) {
-            output.append("$").append(inputArray[i].length()).append(CRLF).append(inputArray[i]).append(CRLF);
-        }
-        return output.toString();
-    }
-
-    public void run() throws IOException {
-        RdbFile.refreshRDBFile();
+    public void run() {
         try (
                 BufferedReader reader = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
                 BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(clientSocket.getOutputStream()));) {
@@ -107,7 +56,7 @@ public class RequestHandler {
 
                     } else if (args[0].equalsIgnoreCase("echo") && numArgs == 2) {
                         String message = args[1];
-                        writer.write(bulkString(message));
+                        writer.write(Utils.bulkString(message));
                         writer.flush();
 
                     } else if (args[0].equalsIgnoreCase("set") && numArgs >= 3) {
@@ -124,44 +73,44 @@ public class RequestHandler {
                         if (keyValueHashMap.containsKey(args[1])) {
                             if (keyExpiryHashMap.containsKey(args[1])) {
                                 if (System.currentTimeMillis() < keyExpiryHashMap.get(args[1])) {
-                                    writer.write(bulkString(keyValueHashMap.get(args[1])));
+                                    writer.write(Utils.bulkString(keyValueHashMap.get(args[1])));
                                     writer.flush();
                                 } else {
                                     keyExpiryHashMap.remove(args[1]);
                                     keyValueHashMap.remove(args[1]);
-                                    writer.write(NIL);
+                                    writer.write(Config.NIL);
                                     writer.flush();
                                 }
                             } else {
-                                writer.write(bulkString(keyValueHashMap.get(args[1])));
+                                writer.write(Utils.bulkString(keyValueHashMap.get(args[1])));
                                 writer.flush();
                             }
-                        } else if (RdbFile.RDBkeyValueHashMap.containsKey(args[1])) {
-                            if (RdbFile.RDBkeyExpiryHashMap.containsKey(args[1])) {
-                                if (System.currentTimeMillis() < RdbFile.RDBkeyExpiryHashMap.get(args[1])) {
-                                    writer.write(bulkString(RdbFile.RDBkeyValueHashMap.get(args[1])));
+                        } else if (RdbUtils.RDBkeyValueHashMap.containsKey(args[1])) {
+                            if (RdbUtils.RDBkeyExpiryHashMap.containsKey(args[1])) {
+                                if (System.currentTimeMillis() < RdbUtils.RDBkeyExpiryHashMap.get(args[1])) {
+                                    writer.write(Utils.bulkString(RdbUtils.RDBkeyValueHashMap.get(args[1])));
                                     writer.flush();
                                 } else {
-                                    writer.write(NIL);
+                                    writer.write(Config.NIL);
                                     writer.flush();
                                 }
                             } else {
-                                writer.write(bulkString(RdbFile.RDBkeyValueHashMap.get(args[1])));
+                                writer.write(Utils.bulkString(RdbUtils.RDBkeyValueHashMap.get(args[1])));
                                 writer.flush();
                             }
                             
                         } else {
-                            writer.write(NIL);
+                            writer.write(Config.NIL);
                             writer.flush();
                         }
 
                     } else if (args[0].equalsIgnoreCase("config")) {
                         if (args[1].equalsIgnoreCase("get")) {
                             if (args[2].equalsIgnoreCase("dir")) {
-                                writer.write(encodeArray(new String[] { "dir", Main.dir }));
+                                writer.write(Utils.encodeArray(new String[] { "dir", Config.dir }));
                                 writer.flush();
                             } else if (args[2].equalsIgnoreCase("dbfilename")) {
-                                writer.write(encodeArray(new String[] { "dbfilename", Main.dbfilename }));
+                                writer.write(Utils.encodeArray(new String[] { "dbfilename", Config.dbfilename }));
                                 writer.flush();
                             } else {
                                 writer.write("-ERROR: Unknown configuration key arguments\r\n");
@@ -172,30 +121,30 @@ public class RequestHandler {
                             writer.flush();
                         }
                     } else if (args[0].equalsIgnoreCase("keys")) {
-                        if (Main.dbfilename.isEmpty() && Main.dir.isEmpty()) {
+                        if (Config.dbfilename.isEmpty() && Config.dir.isEmpty()) {
                             writer.write("-ERROR: RDB File not found\r\n");
                             writer.flush();
                         } else {
 
                             if (args[1].equals("*")) {
-                                System.out.println("keys: " + Arrays.toString(RdbFile.getKeys()));
-                                writer.write(encodeArray(RdbFile.getKeys()));
+                                System.out.println("keys: " + Arrays.toString(RdbUtils.getKeys()));
+                                writer.write(Utils.encodeArray(RdbUtils.getKeys()));
                                 writer.flush();
                             }
                         }
 
                     } else if (args[0].equalsIgnoreCase("info")){
-                        if(Main.hostPort == -1 &&  Main.hostname.isBlank()){
+                        if(Config.hostPort == -1 &&  Config.hostName.isBlank()){
                             StringBuilder output = new StringBuilder();
                             output.append("role:master");
                             output.append("\n");
                             output.append("master_replid:").append("8371b4fb1155b71f4a04d3e1bc3e18c4a990aeeb");
                             output.append("\n");
                             output.append("master_repl_offset:").append("0");
-                            writer.write(bulkString(output.toString()));
+                            writer.write(Utils.bulkString(output.toString()));
                             writer.flush();
                         }else{
-                            writer.write(bulkString("role:slave"));
+                            writer.write(Utils.bulkString("role:slave"));
                             writer.flush();
                         }
 
