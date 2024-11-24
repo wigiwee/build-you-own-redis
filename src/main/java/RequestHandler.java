@@ -7,8 +7,8 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.net.Socket;
-import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
+import java.security.cert.CRL;
 import java.util.Arrays;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -61,37 +61,6 @@ public class RequestHandler {
                     ((fis.read() & 0xFF));
         }
         return length;
-        // int read;
-
-        // read = inputStream.read();
-
-        // int len_encoding_bit = (read & 0b11000000) >> 6;
-
-        // int len = 0;
-
-        // // System.out.println("bit: " + (read & 0x11000000));
-
-        // if (len_encoding_bit == 0) {
-
-        // len = read & 0b00111111;
-
-        // } else if (len_encoding_bit == 1) {
-
-        // int extra_len = inputStream.read();
-
-        // len = ((read & 0b00111111) << 8) + extra_len;
-
-        // } else if (len_encoding_bit == 2) {
-
-        // byte[] extra_len = new byte[4];
-
-        // inputStream.read(extra_len);
-
-        // len = ByteBuffer.wrap(extra_len).getInt();
-
-        // }
-
-        // return len;
     }
 
     static String encodeArray(String[] inputArray) {
@@ -103,8 +72,8 @@ public class RequestHandler {
         return output.toString();
     }
 
-    public void run() {
-
+    public void run() throws IOException {
+        RdbFile.refreshRDBFile();
         try (
                 BufferedReader reader = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
                 BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(clientSocket.getOutputStream()));) {
@@ -135,6 +104,11 @@ public class RequestHandler {
                         writer.write("+PONG\r\n");
                         writer.flush();
 
+                    } else if (args[0].equalsIgnoreCase("echo") && numArgs == 2) {
+                        String message = args[1];
+                        writer.write("$" + message.length() + CRLF + message + CRLF);
+                        writer.flush();
+
                     } else if (args[0].equalsIgnoreCase("set") && numArgs >= 3) {
                         keyValueHashMap.put(args[1], args[2]);
                         if (numArgs > 3) {
@@ -144,6 +118,43 @@ public class RequestHandler {
                         }
                         writer.write("+OK\r\n");
                         writer.flush();
+
+                    } else if (args[0].equalsIgnoreCase("get") && numArgs == 2) {
+                        if (keyValueHashMap.containsKey(args[1])) {
+                            if (keyExpiryHashMap.containsKey(args[1])) {
+                                if (System.currentTimeMillis() < keyExpiryHashMap.get(args[1])) {
+                                    writer.write("$" + keyValueHashMap.get(args[1]).length() + CRLF
+                                            + keyValueHashMap.get(args[1]) + CRLF);
+                                    writer.flush();
+                                } else {
+                                    keyExpiryHashMap.remove(args[1]);
+                                    keyValueHashMap.remove(args[1]);
+                                    writer.write("$-1\r\n");
+                                    writer.flush();
+                                }
+                            } else {
+                                writer.write("$" + keyValueHashMap.get(args[1]).length() + CRLF
+                                        + keyValueHashMap.get(args[1]) + CRLF);
+                                writer.flush();
+                            }
+                        } else if (RdbFile.RDBkeyValueHashMap.containsKey(args[1])) {
+                            if (RdbFile.RDBkeyExpiryHashMap.containsKey(args[1])) {
+                                if (System.currentTimeMillis() < RdbFile.RDBkeyExpiryHashMap.get(args[1])) {
+                                    writer.write("$" + RdbFile.RDBkeyValueHashMap.get(args[1]).length() + CRLF
+                                            + RdbFile.RDBkeyExpiryHashMap.get(args[1]) + CRLF);
+                                    writer.flush();
+                                } else {
+                                    writer.write("$-1" + CRLF);
+                                    writer.flush();
+                                }
+                            } else {
+                                writer.write("$" + RdbFile.RDBkeyValueHashMap.get(args[1]).length() + CRLF
+                                        + RdbFile.RDBkeyValueHashMap.get(args[1]) + CRLF);
+                            }
+                        } else {
+                            writer.write("$-1\r\n");
+                            writer.flush();
+                        }
 
                     } else if (args[0].equalsIgnoreCase("config")) {
                         if (args[1].equalsIgnoreCase("get")) {
@@ -161,82 +172,17 @@ public class RequestHandler {
                             writer.write("-ERROR: Unknown command or incorrect arguments\r\n");
                             writer.flush();
                         }
-                    } else if (args[0].equalsIgnoreCase("get") && numArgs == 2) {
-                        if (keyValueHashMap.containsKey(args[1])) {
-                            if (keyExpiryHashMap.containsKey(args[1])) {
-                                if (System.currentTimeMillis() < keyExpiryHashMap.get(args[1])) {
-                                    writer.write("$" + keyValueHashMap.get(args[1]).length() + CRLF
-                                            + keyValueHashMap.get(args[1]) + CRLF);
-                                    writer.flush();
-                                } else {
-                                    keyExpiryHashMap.remove(args[1]);
-                                    keyValueHashMap.remove(args[1]);
-                                    writer.write("$-1\r\n");
-                                    writer.flush();
-                                }
-                            } else {
-                                System.out.println(keyValueHashMap.get(args[1]));
-                                writer.write("$" + keyValueHashMap.get(args[1]).length() + CRLF
-                                        + keyValueHashMap.get(args[1]) + CRLF);
-                                writer.flush();
-                            }
-                        } else {
-                            writer.write("$-1\r\n");
-                            writer.flush();
-                        }
-
-                    } else if (args[0].equalsIgnoreCase("echo") && numArgs == 2) {
-                        String message = args[1];
-                        writer.write("$" + message.length() + CRLF + message + CRLF);
-                        writer.flush();
-
                     } else if (args[0].equalsIgnoreCase("keys")) {
-                        if (Main.dir.isEmpty() || Main.dbfilename.isEmpty()) {
+                        if (!Main.dir.isEmpty() && !Main.dbfilename.isEmpty()) {
                             writer.write("-ERROR: Unknown command or incorrect arguments\r\n");
                             writer.flush();
-                        }
-                        try (InputStream fis = new FileInputStream(new File(Main.dir, Main.dbfilename))) {
-                            byte[] redis = new byte[5];
-                            byte[] version = new byte[4];
+                        } else {
 
-                            fis.read(redis);
-                            fis.read(version);
-
-                            System.out.println("Magic String: " + new String(redis, StandardCharsets.UTF_8));
-                            System.out.println("Magic String: " + new String(version, StandardCharsets.UTF_8));
-
-                            int bytee;
-                            while ((bytee = fis.read()) != -1) {
-                                if (bytee == 0xFB) {
-                                    int hastTableSize = sizeEncoding(fis);
-                                    int exipryKeyHashTable = sizeEncoding(fis);
-                                    for (int i = 0; i < hastTableSize; i++) {
-                                        int b = fis.read();
-                                        int valueType;
-                                        if (b == 0xFC) {
-                                            byte[] expiryTimeUnixFormat = new byte[8];
-                                            fis.read(expiryTimeUnixFormat);
-                                            valueType = fis.read();
-                                        } else if (b == 0xFD) {
-                                            byte[] expiryTime = new byte[4];
-                                            fis.read(expiryTime);
-                                            valueType = fis.read();
-                                        } else {
-                                            valueType = b;
-                                        }
-                                        int keyLength = fis.read();
-                                        byte[] key = new byte[keyLength];
-                                        fis.read(key);
-                                        String keyStr = new String(key, StandardCharsets.UTF_8);
-                                        String[] keyArray = new String[hastTableSize];
-                                        keyArray[0] = keyStr;
-                                        writer.write(encodeArray(new String[] { keyStr }));
-                                        writer.flush();
-                                    }
-
-                                }
+                            if (args[1].equals("*")) {
+                                writer.write(encodeArray(RdbFile.getKeys()));
                             }
                         }
+
                     } else {
                         writer.write("-ERROR: Unknown command or incorrect arguments\r\n");
                         writer.flush();
