@@ -36,8 +36,7 @@ public class Main {
             }else if( args[i].equals("--replicaof")){
                 String value = args[i+1];
                 System.out.println(args[i+1]);
-                String trimQuotation = value.substring(1, value.length());
-                String[] strArray = trimQuotation.split(" ");
+                String[] strArray = value.split(" ");
                 hostname =  strArray[0];
                 hostPort = Integer.parseInt(strArray[1]);
             }
