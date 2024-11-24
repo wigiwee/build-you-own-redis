@@ -1,15 +1,10 @@
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.net.Socket;
-import java.nio.charset.StandardCharsets;
-import java.security.cert.CRL;
-import java.util.Arrays;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class RequestHandler {
@@ -98,7 +93,7 @@ public class RequestHandler {
                             continue;
                         }
                     }
-                    System.out.println(Arrays.toString(args));
+                    System.out.println(RdbFile.RDBkeyValueHashMap.toString());
 
                     if (args[0].equalsIgnoreCase("ping")) {
                         writer.write("+PONG\r\n");
@@ -199,7 +194,7 @@ public class RequestHandler {
             try {
                 clientSocket.close(); // Ensure socket is closed to avoid resource leaks
             } catch (IOException e) {
-                System.out.println("Error closing socket: " + e.getMessage());
+                e.printStackTrace();
             }
         }
     }
