@@ -69,6 +69,8 @@ public class RequestHandler {
     }
 
     public void run() throws IOException {
+        System.out.println(Arrays.toString(RdbFile.getKeys()));
+
         RdbFile.refreshRDBFile();
         try (
                 BufferedReader reader = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));

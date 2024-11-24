@@ -79,7 +79,7 @@ public class RdbFile {
 
     static String[] getKeys() throws IOException {
         refreshRDBFile();
-        return (String[]) RDBkeyValueHashMap.keySet().toArray();
+        return RDBkeyValueHashMap.keySet().toArray(new String[RDBkeyValueHashMap.keySet().size()]);
     }
 
     static void syncHashMaps() {
