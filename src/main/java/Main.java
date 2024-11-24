@@ -33,7 +33,13 @@ public class Main {
                 clientSocket = serverSocket.accept();
     
                 RequestHandler requestHandler = new RequestHandler(clientSocket);
-                Thread.startVirtualThread(requestHandler::run);
+                Thread.startVirtualThread(() -> {
+                    try {
+                        requestHandler.run();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                });
             }
         } catch (IOException e) {
             System.out.println("IOException: " + e.getMessage());
