@@ -186,7 +186,13 @@ public class RequestHandler {
 
                     } else if (args[0].equalsIgnoreCase("info")){
                         if(Main.hostPort == -1 &&  Main.hostname.isBlank()){
-                            writer.write(bulkString("role:master"));
+                            StringBuilder output = new StringBuilder();
+                            output.append("role:master");
+                            output.append("\n");
+                            output.append("master_replid:").append("8371b4fb1155b71f4a04d3e1bc3e18c4a990aeeb");
+                            output.append("\n");
+                            output.append("master_repl_offset:").append("0");
+                            writer.write(bulkString(output.toString()));
                             writer.flush();
                         }else{
                             writer.write(bulkString("role:slave"));
