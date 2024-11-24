@@ -58,7 +58,6 @@ public class RdbFile {
                         int keyLength = fis.read();
                         byte[] keyBytes = new byte[keyLength];
                         fis.read(keyBytes);
-                        RDBkeyValueHashMap.put(new String(keyBytes, StandardCharsets.UTF_8), null);
 
                         int valueLength = fis.read();
                         byte[] valueByte = new byte[valueLength];
@@ -73,9 +72,7 @@ public class RdbFile {
             }
 
         } catch (FileNotFoundException e) {
-
-        } catch( NegativeArraySizeException e){
-
+            
         }
 
     }
