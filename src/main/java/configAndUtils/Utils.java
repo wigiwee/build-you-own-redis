@@ -68,7 +68,12 @@ public class Utils {
         String[] strArr = str.split(" ");
         StringBuilder output = new StringBuilder();
         output.append("*").append(strArr.length);
-        output.append(Config.CRLF).append(bulkString(str));
+        output.append(Config.CRLF);
+        for (String string : strArr) {
+            output.append("$").append(string.length());
+            output.append(string);
+            output.append(Config.CRLF);
+        }
         return output.toString();
     }
 
