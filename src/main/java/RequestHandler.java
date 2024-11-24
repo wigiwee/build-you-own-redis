@@ -3,6 +3,7 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.math.BigInteger;
 import java.net.Socket;
 import java.util.Arrays;
 import java.util.Base64;
@@ -174,17 +175,19 @@ public class RequestHandler {
                         writer.write("+FULLRESYNC 8371b4fb1155b71f4a04d3e1bc3e18c4a990aeeb 0" + Config.CRLF);
                         writer.flush();
 
-                        byte[] contents = HexFormat.of().parseHex(
-                                "524544495330303131fa0972656469732d76657205372e322e30fa0a72656469732d62697473c040fa056374696d65c26d08bc65fa08757365642d6d656dc2b0c41000fa08616f662d62617365c000fff06e3bfec0ff5aa2");
-                        StringBuilder output = new StringBuilder();
-                        for (byte b : contents) {
-                            output.append(b & 0xFFFFFFFFL);
-                            // System.out.println(b);
-                        }
-                        // System.out.println(output.toString());
-                        System.out.println(output.toString());
-                        writer.write("$" + output.length() + Config.CRLF + output.toString());
-                        writer.flush();
+                        // byte[] contents = HexFormat.of().parseHex(
+                        //         "524544495330303131fa0972656469732d76657205372e322e30fa0a72656469732d62697473c040fa056374696d65c26d08bc65fa08757365642d6d656dc2b0c41000fa08616f662d62617365c000fff06e3bfec0ff5aa2");
+                        // StringBuilder output = new StringBuilder();
+                        // for (byte b : contents) {
+                        //     output.append(b & 0xFFFFFFFFL);
+                        //     // System.out.println(b);
+                        // }
+                        String rdbHex = "524544495330303131fa0972656469732d76657205372e322e30fa0a72656469732d62697473c040fa056374696d65c26d08bc65fa08757365642d6d656dc2b0c41000fa08616f662d62617365c000fff06e3bfec0ff5aa2";
+                        byte[] rdbContent = new BigInteger(rdbHex, 16).toByteArray();
+
+                        // writer.write("$" + rdbContent.length + Config.CRLF + /*what to write here */);
+                        // writer.flush();
+                        writer.write("$88\r\n524544495330303131fa0972656469732d76657205372e322e30fa0a72656469732d62697473c040fa056374696d65c26d08bc65fa08757365642d6d656dc2b0c41000fa08616f662d62617365c000fff06e3bfec0ff5aa2");
 
                     } else {
 
