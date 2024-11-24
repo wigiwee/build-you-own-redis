@@ -5,6 +5,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.net.Socket;
 import java.util.Arrays;
+import java.util.HexFormat;
 import java.util.concurrent.ConcurrentHashMap;
 
 import configAndUtils.Config;
@@ -171,6 +172,14 @@ public class RequestHandler {
                     } else if (args[0].equalsIgnoreCase("psync")) {
                         writer.write("+FULLRESYNC 8371b4fb1155b71f4a04d3e1bc3e18c4a990aeeb 0" + Config.CRLF);
                         writer.flush();
+                        byte[] tempFile = HexFormat.of().parseHex("524544495330303131fa0972656469732d76657205372e322e30fa0a72656469732d62697473c040fa056374696d65c26d08bc65fa08757365642d6d656dc2b0c41000fa08616f662d62617365c000fff06e3bfec0ff5aa2")
+                        StringBuilder output = new StringBuilder();
+                        output.append("$").append(tempFile.length);
+                        output.append(Config.CRLF);
+                        for (byte b : tempFile) {
+                            output.append(b);
+                        }
+                        writer.write(output.toString());
                     } else {
 
                         writer.write("-ERROR: Unknown command or incorrect arguments\r\n");
