@@ -55,7 +55,7 @@ public class RdbFile {
                             fis.read(timeStamp);
                             ByteBuffer byteBuffer = ByteBuffer.wrap(timeStamp);
                             byteBuffer.order(ByteOrder.LITTLE_ENDIAN);
-                            expireTimeStampInMs = byteBuffer.getInt() & 0xFFFFFFFFL; 
+                            expireTimeStampInMs = (byteBuffer.getInt() & 0xFFFFFFFFL) * 1000; 
                             valuetype = fis.read();
                         } else {
                             valuetype = b;
