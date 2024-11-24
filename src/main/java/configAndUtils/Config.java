@@ -3,9 +3,9 @@ package configAndUtils;
 public class Config {
  
 
-    public static String dir;
+    public static String dir = "";
 
-    public static String dbfilename;
+    public static String dbfilename = "";
 
     public static final String CRLF = "\r\n";
 
@@ -21,4 +21,6 @@ public class Config {
 
     public static String version = "";
 
+    public static boolean isHandshakeComplete = false;
+    
 }

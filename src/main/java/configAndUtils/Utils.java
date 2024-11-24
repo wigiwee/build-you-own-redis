@@ -91,11 +91,20 @@ public class Utils {
     }
 
     public static void handshake() throws UnknownHostException, IOException {
+        
         Socket socket = new Socket(Config.hostName, Config.hostPort);
         BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
         BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
         writer.write(RESP2format("PING"));
         writer.flush();
         System.out.println(reader.readLine());
+
+        writer.write(RESP2format("REPLCONF listening-port "+ Config.port));
+        System.out.println(reader.readLine());
+
+        writer.write(RESP2format("REPLCONF capa psync2"));
+        System.out.println(reader.readLine());
+
+        
     }
 }
