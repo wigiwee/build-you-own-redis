@@ -186,8 +186,7 @@ public class RequestHandler {
                         byte[] rdbContent = new BigInteger(rdbHex, 16).toByteArray();
                         StringBuilder output = new StringBuilder();
                         for (byte b : rdbContent ) {
-                            output.append(b);
-                            
+                            output.append(b & 0b11111111);
                         }
 
                         writer.write("$" + rdbContent.length + Config.CRLF + output.toString());
