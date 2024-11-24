@@ -15,10 +15,29 @@ public class RequestHandler {
 
     private Socket clientSocket;
     public final static String CRLF = "\r\n";
-    static ConcurrentHashMap<String, HashMapValue> hashMap = new ConcurrentHashMap<>();
-
+    static ConcurrentHashMap<String, String> keyValueHashMap = new ConcurrentHashMap<>();
+    static ConcurrentHashMap<String, Long> keyExpiryHashMap = new ConcurrentHashMap<>();
     public RequestHandler(Socket clientSocket) {
         this.clientSocket = clientSocket;
+    }
+    static int stringEncoding(InputStream fis) throws IOException {
+        int length =0;
+        int b = fis.read();
+        int first2Byte = b & 11000000;
+        if(first2Byte == 0x00){
+            length =  b & 00111111;
+        }else if(first2Byte == 0xC0){
+            length = 8;
+        }else if(first2Byte == 0xC1){
+            
+        }else if(first2Byte == 0xC2){
+            
+        }else if(first2Byte == 0xC3){
+            //LZF algorithm
+            
+        }
+
+        return length; 
     }
 
     static int sizeEncoding(InputStream fis) throws IOException{
@@ -82,16 +101,12 @@ public class RequestHandler {
                         writer.flush();
 
                     } else if (args[0].equalsIgnoreCase("set") && numArgs >= 3) {
-                        HashMapValue hashMapValue = new HashMapValue();
-                        hashMapValue.value = args[2];
+                        keyValueHashMap.put(args[1], args[2]);
                         if (numArgs > 3) {
                             if (args[3].equalsIgnoreCase("px")) {
-                                hashMapValue.expiry = System.currentTimeMillis() + Long.parseLong(args[4]);
+                                keyExpiryHashMap.put(args[1], System.currentTimeMillis() + Long.parseLong(args[4]));
                             }
-                        } else {
-                            hashMapValue.expiry = -1;
                         }
-                        hashMap.put(args[1], hashMapValue);
                         writer.write("+OK\r\n");
                         writer.flush();
 
@@ -125,64 +140,59 @@ public class RequestHandler {
 
                             System.out.println("Magic String: "+ new String(redis, StandardCharsets.UTF_8));
                             System.out.println("Magic String: "+ new String(version, StandardCharsets.UTF_8));
-                            if(args[1].equals("*")){
-                                int bytee;
-                                while((bytee = fis.read()) != -1){
-                                    if(bytee == 0xFB){
-                                        sizeEncoding(fis);
-                                        sizeEncoding(fis);
-                                        break;        
+                            
+                            int bytee;
+                            while((bytee = fis.read()) != -1){
+                                if(bytee == 0xFB){
+                                    int hastTableSize = sizeEncoding(fis);
+                                    int exipryKeyHashTable = sizeEncoding(fis);
+                                    for(int i = 0; i < hastTableSize; i++){
+                                        if(fis.read() == 0xFC){
+                                            byte[] expiryTimeUnixFormat = new byte[8];
+                                            fis.read(expiryTimeUnixFormat);    
+                                        }
+                                        if(fis.read() == 0xFD){
+                                            byte[] expiryTime = new byte[4];
+                                            fis.read(expiryTime);
+                                        }
+                                        int valueType = fis.read();
+
+                                        int keyLength = fis.read();
+                                        byte[] key = new byte[keyLength];
+                                        fis.read(key);
+                                        int valueLength = fis.read();
+                                        byte[] value = new byte[valueLength];
+                                        keyValueHashMap.put(new String(key), new String(value));
                                     }
-                                    int type = fis.read();
-                                    int len = sizeEncoding(fis);
-
-                                    byte[] key_bytes = new byte[len];
-                                    fis.read(key_bytes);
-
-                                    String parsed_key = new String(key_bytes);
-                                    writer.write("*1\r\n$" + parsed_key.length() + "\r\n" + parsed_key + "\r\n");
-                                    writer.flush();
-                                    break;
+                                    
                                 }
                             }
-                            // int b;
-                            // while ((b = fis.read()) != -1){
-                            //     switch (b) {
-                            //         case 0xFF:
-                            //             System.out.println("EOF");
-                            //             break;
-                            //         case 0xFA: 
-                            //             System.out.println("Metadata section");
-                            //         case 0xFE:
-                            //             System.out.println("SELECTDB");
-                            //         case 0xFB:
-                            //             System.out.println("RESIZEDB");
-                            //         case 0xFD:
-                            //             System.out.println("EXPIRETIMEMS");
-                            //         case 0xFC:
-                            //             System.out.println("EXPIRETIME");
-                            //         default:
-                            //             break;
-                            //     }
-                            // }
-
-
+                        }
+                        if(args[2].equalsIgnoreCase("*")){
+                            String[] keys = (String[]) keyValueHashMap.keySet().toArray();
+                            writer.write(encodeArray(keys));
+                            writer.flush();
+                            
                         }
 
 
                     } else if (args[0].equalsIgnoreCase("get") && numArgs == 2) {
-                        if (hashMap.containsKey(args[1])) {
-                            HashMapValue obj = hashMap.get(args[1]);
-                            if (obj.expiry == -1) {
-                                writer.write("$" + obj.value.length() + CRLF + obj.value + CRLF);
-                                writer.flush();
-                            } else if (System.currentTimeMillis() < obj.expiry) {
-                                writer.write("$" + obj.value.length() + CRLF + obj.value + CRLF);
-                                writer.flush();
-                            } else {
-                                writer.write("$-1\r\n");
+                        if(keyValueHashMap.contains(args[1])){
+                            if(keyExpiryHashMap.contains(args[1])){
+                                if(System.currentTimeMillis() < keyExpiryHashMap.get(args[1])){
+                                    writer.write("$" + keyValueHashMap.get(args[1]).length() + CRLF + keyValueHashMap.get(args[1]) + CRLF);
+                                    writer.flush();
+                                }else{
+                                    keyExpiryHashMap.remove(args[1]);
+                                    keyValueHashMap.remove(args[1]);
+                                }
+                            }else{
+                                writer.write("$"+ keyValueHashMap.get(args[1]).length() + CRLF + keyValueHashMap.get(args[1])+ CRLF);
                                 writer.flush();
                             }
+                        }else{
+                            writer.write("$-1\r\n");
+                            writer.flush();
                         }
 
                     } else if (args[0].equalsIgnoreCase("echo") && numArgs == 2) {
@@ -210,9 +220,4 @@ public class RequestHandler {
             }
         }
     }
-}
-
-class HashMapValue {
-    String value;
-    long expiry;
 }
