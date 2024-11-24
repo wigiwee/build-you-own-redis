@@ -21,7 +21,7 @@ public class Main {
         BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
         BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 
-        writer.write(RequestHandler.bulkString("PING"));
+        writer.write("*2"+ RequestHandler.CRLF+RequestHandler.bulkString("PING"));
         System.out.println(reader.readLine());
     }
     public static void main(String[] args) throws UnknownHostException, IOException {
@@ -35,7 +35,6 @@ public class Main {
                 port = Integer.parseInt(args[i+1]);
             }else if( args[i].equals("--replicaof")){
                 String value = args[i+1];
-                System.out.println(args[i+1]);
                 String[] strArray = value.split(" ");
                 hostname =  strArray[0];
                 hostPort = Integer.parseInt(strArray[1]);
@@ -44,7 +43,6 @@ public class Main {
         if(hostPort !=-1 && !hostname.isEmpty()){
             handshake();
         }
-        System.out.println(hostname);
         System.out.println("Logs from your program will appear here!");
         
         ServerSocket serverSocket = null;
