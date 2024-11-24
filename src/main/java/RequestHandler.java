@@ -201,24 +201,21 @@ public class RequestHandler {
                                         System.out.println(keyStr);
                                         // System.out.println("key: " + new String(key));
                                         fis.read(key);
-                                        int valueLength = fis.read();
-                                        // System.out.println("valueLength" + valueLength);
-                                        byte[] value = new byte[valueLength];
-                                        // System.out.println(new String(key) + " " + new String(value));
-                                        keyValueHashMap.put(new String(key), new String(value));
+                                        writer.write(encodeArray(new String[] { keyStr}));
+                                        
                                     }
 
                                 }
                             }
                         }
-                        if (args[1].equalsIgnoreCase("*")) {
-                            String[] keys = (String[]) keyValueHashMap.keySet().toArray();
-                            System.out.println(Arrays.toString(keys));
-                            writer.write(encodeArray(keys));
-                            writer.flush();
-                            ;
+                        // if (args[1].equalsIgnoreCase("*")) {
+                        //     String[] keys = (String[]) keyValueHashMap.keySet().toArray();
+                        //     System.out.println(Arrays.toString(keys));
+                        //     writer.write(encodeArray(keys));
+                        //     writer.flush();
+                        //     ;
 
-                        }
+                        // }
 
                     } else if (args[0].equalsIgnoreCase("get") && numArgs == 2) {
                         if (keyValueHashMap.contains(args[1])) {
