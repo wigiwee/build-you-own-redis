@@ -183,7 +183,7 @@ public class RequestHandler {
                                 if (bytee == 0xFB) {
                                     System.out.println("I am in FB");
                                     int hastTableSize = sizeEncoding(fis);
-                                    System.out.println("hast table size: " + hastTableSize);//correct
+                                    System.out.println("hash table size: " + hastTableSize);//correct
                                     int exipryKeyHashTable = sizeEncoding(fis);
                                     System.out.println("expiry table size:" +exipryKeyHashTable); //correct
                                     for (int i = 0; i < hastTableSize; i++) {
@@ -198,7 +198,7 @@ public class RequestHandler {
                                             fis.read(expiryTime);
                                             valueType = fis.read();
                                         }else{
-                                            valueType = fis.read();
+                                            valueType = b;
                                             System.out.println("value type:  " + valueType);
                                         }
                                         int keyLength = fis.read();
