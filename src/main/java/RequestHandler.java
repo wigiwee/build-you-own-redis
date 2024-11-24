@@ -125,7 +125,7 @@ public class RequestHandler {
                         if (keyValueHashMap.containsKey(args[1])) {
                             if (keyExpiryHashMap.containsKey(args[1])) {
                                 if (System.currentTimeMillis() < keyExpiryHashMap.get(args[1])) {
-                                    writer.write(keyValueHashMap.get(args[1]));
+                                    writer.write(bulkString(keyValueHashMap.get(args[1])));
                                     writer.flush();
                                 } else {
                                     keyExpiryHashMap.remove(args[1]);
