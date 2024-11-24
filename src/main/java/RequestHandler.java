@@ -205,7 +205,7 @@ public class RequestHandler {
                                         System.out.println(keyLength);
                                         System.out.println(keyLength);
                                         byte[] key = new byte[keyLength];
-                                        String keyStr = new String(key);
+                                        String keyStr = new String(key, StandardCharsets.UTF_8);
                                         System.out.println("key: " + new String(key));
                                         fis.read(key);
                                         System.out.println("I came here " + keyStr);
