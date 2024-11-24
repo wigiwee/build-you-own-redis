@@ -178,11 +178,12 @@ public class RequestHandler {
                                 "524544495330303131fa0972656469732d76657205372e322e30fa0a72656469732d62697473c040fa056374696d65c26d08bc65fa08757365642d6d656dc2b0c41000fa08616f662d62617365c000fff06e3bfec0ff5aa2");
                         StringBuilder output = new StringBuilder();
                         for (byte b : contents) {
-                            // HexFormat.of().
+                            output.append(b & 0b11111111);
+                            // System.out.println(b);
                         }
                         // System.out.println(output.toString());
                         System.out.println(output.toString());
-                        writer.write("$" + contents.length + Config.CRLF + "524544495330303131fa0972656469732d76657205372e322e30fa0a72656469732d62697473c040fa056374696d65c26d08bc65fa08757365642d6d656dc2b0c41000fa08616f662d62617365c000fff06e3bfec0ff5aa2");
+                        writer.write("$" + output.length() + Config.CRLF + output.toString());
                         writer.flush();
 
                     } else {
