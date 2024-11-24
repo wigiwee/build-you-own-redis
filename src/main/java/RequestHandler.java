@@ -162,6 +162,7 @@ public class RequestHandler {
                                         fis.read(key);
                                         int valueLength = fis.read();
                                         byte[] value = new byte[valueLength];
+                                        System.out.println(new String(key) + " " + new String(value));;
                                         keyValueHashMap.put(new String(key), new String(value));
                                     }
                                     
@@ -171,7 +172,7 @@ public class RequestHandler {
                         if(args[2].equalsIgnoreCase("*")){
                             String[] keys = (String[]) keyValueHashMap.keySet().toArray();
                             writer.write(encodeArray(keys));
-                            writer.flush();
+                            writer.flush();;
                             
                         }
 
