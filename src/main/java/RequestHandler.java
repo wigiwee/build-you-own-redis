@@ -183,7 +183,9 @@ public class RequestHandler {
                                 if (bytee == 0xFB) {
                                     System.out.println("I am in FB");
                                     int hastTableSize = sizeEncoding(fis);
+                                    System.out.println(hastTableSize);
                                     int exipryKeyHashTable = sizeEncoding(fis);
+                                    System.out.println(exipryKeyHashTable);
                                     for (int i = 0; i < hastTableSize; i++) {
                                         int b = fis.read();
                                         int valueType ;
@@ -197,9 +199,10 @@ public class RequestHandler {
                                             valueType = fis.read();
                                         }else{
                                             valueType = fis.read();
+                                            System.out.println(valueType);
                                         }
-                                        // System.out.println("valuetype: " + valueType);
                                         int keyLength = fis.read();
+                                        System.out.println(keyLength);
                                         System.out.println(keyLength);
                                         byte[] key = new byte[keyLength];
                                         String keyStr = new String(key);
