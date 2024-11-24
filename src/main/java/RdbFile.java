@@ -39,7 +39,7 @@ public class RdbFile {
                     int rdbKeyValueHashTableSize = fis.read();
                     int rdbKeyExpiryHashTableSize = fis.read();
                     int b;
-                    long expireTimeStampInMs = 0;
+                    long expireTimeStampInMs = -1;
                     int valuetype;
                     for (int i = 0; i < rdbKeyValueHashTableSize; i++) {
                         b = fis.read();
@@ -71,7 +71,9 @@ public class RdbFile {
 
                         RDBkeyValueHashMap.put(new String(keyBytes, StandardCharsets.UTF_8),
                                 new String(valueByte, StandardCharsets.UTF_8));
-                        RDBkeyExpiryHashMap.put(new String(keyBytes, StandardCharsets.UTF_8), expireTimeStampInMs);
+                        if(expireTimeStampInMs != -1){
+                            RDBkeyExpiryHashMap.put(new String(keyBytes, StandardCharsets.UTF_8), expireTimeStampInMs);
+                        }
                     }
 
                 }

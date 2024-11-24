@@ -117,8 +117,6 @@ public class RequestHandler {
                         writer.flush();
 
                     } else if (args[0].equalsIgnoreCase("get") && numArgs == 2) {
-                        System.out.println(Arrays.asList(RdbFile.getKeys()));
-                        RdbFile.refreshRDBFile();
                         if (keyValueHashMap.containsKey(args[1])) {
                             if (keyExpiryHashMap.containsKey(args[1])) {
                                 if (System.currentTimeMillis() < keyExpiryHashMap.get(args[1])) {
