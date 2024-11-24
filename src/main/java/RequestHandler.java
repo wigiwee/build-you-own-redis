@@ -147,7 +147,7 @@ public class RequestHandler {
                                     writer.flush();
                                 }
                             } else {
-                                writer.write(bulkString(bulkString(RdbFile.RDBkeyValueHashMap.get(args[1]))));
+                                writer.write(bulkString(RdbFile.RDBkeyValueHashMap.get(args[1])));
                                 writer.flush();
                             }
                             
