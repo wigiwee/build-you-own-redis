@@ -3,6 +3,8 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.nio.charset.StandardCharsets;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -37,19 +39,23 @@ public class RdbFile {
                     int rdbKeyValueHashTableSize = fis.read();
                     int rdbKeyExpiryHashTableSize = fis.read();
                     int b;
-                    long expireTimeStampInMs= 0;
+                    long expireTimeStampInMs = 0;
                     int valuetype;
                     for (int i = 0; i < rdbKeyValueHashTableSize; i++) {
                         b = fis.read();
                         if (b == 0xFC) {
                             byte[] unixTimeStamp = new byte[8];
                             fis.read(unixTimeStamp);
-                            expireTimeStampInMs = 00000;
+                            ByteBuffer byteBuffer = ByteBuffer.wrap(unixTimeStamp);
+                            byteBuffer.order(ByteOrder.LITTLE_ENDIAN);
+                            expireTimeStampInMs = byteBuffer.getLong();
                             valuetype = fis.read();
                         } else if (b == 0xFD) {
                             byte[] timeStamp = new byte[4];
                             fis.read(timeStamp);
-                            expireTimeStampInMs = 00000;
+                            ByteBuffer byteBuffer = ByteBuffer.wrap(timeStamp);
+                            byteBuffer.order(ByteOrder.LITTLE_ENDIAN);
+                            expireTimeStampInMs = byteBuffer.getInt() & 0xFFFFFFFFL; 
                             valuetype = fis.read();
                         } else {
                             valuetype = b;
@@ -72,7 +78,7 @@ public class RdbFile {
             }
 
         } catch (FileNotFoundException e) {
-            
+
         }
 
     }
