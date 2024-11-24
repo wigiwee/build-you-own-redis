@@ -75,7 +75,6 @@ public class RequestHandler {
 
     public void run() throws IOException {
         RdbFile.refreshRDBFile();
-        System.out.println(Arrays.toString(RdbFile.getKeys()));
         try (
                 BufferedReader reader = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
                 BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(clientSocket.getOutputStream()));) {
