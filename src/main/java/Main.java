@@ -27,7 +27,7 @@ public class Main {
                 hostPort = Integer.parseInt(strArray[1]);
             }
         }
-
+        System.out.println(hostname);
         System.out.println("Logs from your program will appear here!");
         
         ServerSocket serverSocket = null;

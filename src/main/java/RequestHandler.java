@@ -74,8 +74,8 @@ public class RequestHandler {
     }
 
     public void run() throws IOException {
-
         RdbFile.refreshRDBFile();
+        System.out.println(RdbFile.RDBkeyExpiryHashMap.toString());
         try (
                 BufferedReader reader = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
                 BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(clientSocket.getOutputStream()));) {
