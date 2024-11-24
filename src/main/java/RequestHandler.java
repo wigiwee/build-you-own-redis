@@ -180,6 +180,7 @@ public class RequestHandler {
                             output.append(b);
                         }
                         writer.write(output.toString());
+                        writer.flush();
                     } else {
 
                         writer.write("-ERROR: Unknown command or incorrect arguments\r\n");
