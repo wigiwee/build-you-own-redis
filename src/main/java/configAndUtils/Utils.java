@@ -55,7 +55,8 @@ public class Utils {
         StringBuilder output = new StringBuilder("");
         output.append("*").append(inputArray.length).append(configAndUtils.Config.CRLF);
         for (int i = 0; i < inputArray.length; i++) {
-            output.append("$").append(inputArray[i].length()).append(Config.CRLF).append(inputArray[i]).append(Config.CRLF);
+            output.append("$").append(inputArray[i].length()).append(Config.CRLF).append(inputArray[i])
+                    .append(Config.CRLF);
         }
         return output.toString();
     }
@@ -97,15 +98,18 @@ public class Utils {
     }
 
     public static void handshake() throws UnknownHostException, IOException {
-        
+
         Socket socket = new Socket(Config.hostName, Config.hostPort);
         BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
         BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+
+        // stage 1
         writer.write(RESP2format("PING"));
         writer.flush();
         System.out.println(reader.readLine());
 
-        writer.write(RESP2format("REPLCONF listening-port "+ Config.port));
+        // stage 2
+        writer.write(RESP2format("REPLCONF listening-port " + Config.port));
         writer.flush();
         System.out.println(reader.readLine());
 
@@ -113,6 +117,9 @@ public class Utils {
         writer.flush();
         System.out.println(reader.readLine());
 
+        writer.write(Utils.RESP2format("PSYNC ? -1"));
+        writer.flush();
+        System.out.println(reader.readLine());        
 
     }
 }

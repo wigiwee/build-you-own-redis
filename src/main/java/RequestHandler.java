@@ -157,18 +157,20 @@ public class RequestHandler {
                             writer.flush();
                         }
 
-                    } else if(args[0].equalsIgnoreCase("replconf")) {
-                        if(args[1].equalsIgnoreCase("listening-port")){
+                    } else if (args[0].equalsIgnoreCase("replconf")) {
+                        if (args[1].equalsIgnoreCase("listening-port")) {
                             System.out.println("Repl listening port: " + Integer.parseInt(args[2]));
                             writer.write("+OK" + Config.CRLF);
                             writer.flush();
-                        }else if(args[1].equalsIgnoreCase("capa")){
+                        } else if (args[1].equalsIgnoreCase("capa")) {
                             System.out.println("capabilitles: " + args[2]);
                             writer.write("+OK" + Config.CRLF);
                             writer.flush();
                         }
 
-                    }else {
+                    } else if (args[0].equalsIgnoreCase("psync")) {
+                        writer.write("+FULLRESYNC 8371b4fb1155b71f4a04d3e1bc3e18c4a990aeeb 0" + Config.CRLF);
+                    } else {
 
                         writer.write("-ERROR: Unknown command or incorrect arguments\r\n");
                         writer.flush();
