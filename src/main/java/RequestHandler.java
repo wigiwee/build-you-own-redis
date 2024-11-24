@@ -186,20 +186,21 @@ public class RequestHandler {
                                     int exipryKeyHashTable = sizeEncoding(fis);
                                     for (int i = 0; i < hastTableSize; i++) {
                                         int b = fis.read();
-                                        int valueTye ;
+                                        int valueType ;
                                         if (b == 0xFC) {
                                             byte[] expiryTimeUnixFormat = new byte[8];
                                             fis.read(expiryTimeUnixFormat);
-                                            valueTye = fis.read();
+                                            valueType = fis.read();
                                         }else if (b == 0xFD) {
                                             byte[] expiryTime = new byte[4];
                                             fis.read(expiryTime);
-                                            valueTye = fis.read();
+                                            valueType = fis.read();
                                         }else{
-                                            valueTye = fis.read();
+                                            valueType = fis.read();
                                         }
                                         // System.out.println("valuetype: " + valueType);
                                         int keyLength = fis.read();
+                                        System.out.println(keyLength);
                                         byte[] key = new byte[keyLength];
                                         String keyStr = new String(key);
                                         // System.out.println("key: " + new String(key));
