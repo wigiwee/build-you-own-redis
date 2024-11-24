@@ -200,7 +200,7 @@ public class RequestHandler {
                                         String keyStr = new String(key);
                                         // System.out.println("key: " + new String(key));
                                         fis.read(key);
-                                        System.out.println("I came here");
+                                        System.out.println("I came here " + keyStr);
                                         writer.write(encodeArray(new String[] { keyStr}));
                                         break;
                                         
