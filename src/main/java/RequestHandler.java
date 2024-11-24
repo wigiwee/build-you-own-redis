@@ -185,6 +185,7 @@ public class RequestHandler {
                             if (args[1].equals("*")) {
                                 System.out.println(Arrays.toString(RdbFile.getKeys()));
                                 writer.write(encodeArray(RdbFile.getKeys()));
+                                writer.flush();
                             }
                         }
 
