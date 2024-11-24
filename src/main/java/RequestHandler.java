@@ -170,6 +170,7 @@ public class RequestHandler {
 
                     } else if (args[0].equalsIgnoreCase("psync")) {
                         writer.write("+FULLRESYNC 8371b4fb1155b71f4a04d3e1bc3e18c4a990aeeb 0" + Config.CRLF);
+                        writer.flush();
                     } else {
 
                         writer.write("-ERROR: Unknown command or incorrect arguments\r\n");
