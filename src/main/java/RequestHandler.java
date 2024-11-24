@@ -143,6 +143,7 @@ public class RequestHandler {
                             
                             int bytee;
                             while((bytee = fis.read()) != -1){
+                                System.out.println("I am here");
                                 if(bytee == 0xFB){
                                     int hastTableSize = sizeEncoding(fis);
                                     int exipryKeyHashTable = sizeEncoding(fis);
@@ -169,7 +170,7 @@ public class RequestHandler {
                                 }
                             }
                         }
-                        if(args[2].equalsIgnoreCase("*")){
+                        if(args[1].equalsIgnoreCase("*")){
                             String[] keys = (String[]) keyValueHashMap.keySet().toArray();
                             writer.write(encodeArray(keys));
                             writer.flush();;
