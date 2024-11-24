@@ -171,6 +171,8 @@ public class RequestHandler {
                                 } else {
                                     keyExpiryHashMap.remove(args[1]);
                                     keyValueHashMap.remove(args[1]);
+                                    writer.write("$-1\r\n");
+                                    writer.flush();
                                 }
                             } else {
                                 System.out.println(keyValueHashMap.get(args[1]));
