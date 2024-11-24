@@ -177,7 +177,7 @@ public class RequestHandler {
                             writer.flush();
                         }
                     } else if (args[0].equalsIgnoreCase("keys")) {
-                        if (!Main.dir.isEmpty() && !Main.dbfilename.isEmpty()) {
+                        if (!Main.dbfilename.isEmpty()) {
                             writer.write("-ERROR: RDB File not found\r\n");
                             writer.flush();
                         } else {
