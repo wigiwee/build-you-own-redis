@@ -5,6 +5,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.net.Socket;
+import java.util.Arrays;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class RequestHandler {
@@ -93,8 +94,8 @@ public class RequestHandler {
                             continue;
                         }
                     }
-                    System.out.println(RdbFile.RDBkeyValueHashMap.toString());
 
+                    System.out.println(Arrays.toString(args));
                     if (args[0].equalsIgnoreCase("ping")) {
                         writer.write("+PONG\r\n");
                         writer.flush();
@@ -145,6 +146,7 @@ public class RequestHandler {
                             } else {
                                 writer.write("$" + RdbFile.RDBkeyValueHashMap.get(args[1]).length() + CRLF
                                         + RdbFile.RDBkeyValueHashMap.get(args[1]) + CRLF);
+                                writer.flush();
                             }
                         } else {
                             writer.write("$-1\r\n");
