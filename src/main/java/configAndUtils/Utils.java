@@ -134,7 +134,6 @@ public class Utils {
             writer.flush();
             System.out.println(reader.readLine());
 
-            
             Config.isHandshakeComplete = true;
 
             while (true) {
