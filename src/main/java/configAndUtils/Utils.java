@@ -7,7 +7,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.net.Socket;
-import java.net.UnknownHostException;
 
 public class Utils {
 
@@ -61,6 +60,19 @@ public class Utils {
         return output.toString();
     }
 
+    public static String encodeCommandArray(String[] commands) {
+        StringBuilder output = new StringBuilder();
+        output.append("*").append(commands.length);
+        for (String command : commands) {
+            output.append(Config.CRLF);
+            output.append("$").append(command.length());
+            output.append(Config.CRLF);
+            output.append(command);
+        }
+        output.append(Config.CRLF);
+        return output.toString();
+    }
+
     public static String bulkString(String str) {
         return "$" + str.length() + Config.CRLF + str + Config.CRLF;
     }
@@ -89,6 +101,7 @@ public class Utils {
             } else if (args[i].equals("--port")) {
                 Config.port = Integer.parseInt(args[i + 1]);
             } else if (args[i].equals("--replicaof")) {
+                Config.role = Roles.SLAVE;
                 String value = args[i + 1];
                 String[] strArray = value.split(" ");
                 Config.hostName = strArray[0];
@@ -97,29 +110,42 @@ public class Utils {
         }
     }
 
-    public static void handshake() throws UnknownHostException, IOException {
+    public static void handshake() {
 
-        Socket socket = new Socket(Config.hostName, Config.hostPort);
-        BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
-        BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+        try (Socket socket = new Socket(Config.hostName, Config.hostPort)) {
+            BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
+            BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 
-        // stage 1
-        writer.write(RESP2format("PING"));
-        writer.flush();
-        System.out.println(reader.readLine());
+            // stage 1
+            writer.write(RESP2format("PING"));
+            writer.flush();
+            System.out.println(reader.readLine());
 
-        // stage 2
-        writer.write(RESP2format("REPLCONF listening-port " + Config.port));
-        writer.flush();
-        System.out.println(reader.readLine());
+            // stage 2
+            writer.write(RESP2format("REPLCONF listening-port " + Config.port));
+            writer.flush();
+            System.out.println(reader.readLine());
 
-        writer.write(RESP2format("REPLCONF capa psync2"));
-        writer.flush();
-        System.out.println(reader.readLine());
+            writer.write(RESP2format("REPLCONF capa psync2"));
+            writer.flush();
+            System.out.println(reader.readLine());
 
-        writer.write(Utils.RESP2format("PSYNC ? -1"));
-        writer.flush();
-        System.out.println(reader.readLine());        
+            writer.write(Utils.RESP2format("PSYNC ? -1"));
+            writer.flush();
+            System.out.println(reader.readLine());
+
+            Config.isHandshakeComplete = true;
+
+            while (true) {
+                if (RequestHandler.replicationQueue.size() != 0) {
+                    System.out.println(encodeCommandArray(RequestHandler.replicationQueue.peek()));
+                    writer.write(encodeCommandArray(RequestHandler.replicationQueue.poll()));
+                    writer.flush();
+                }
+            }
+        } catch (IOException e) {
+            System.out.println("Something went wrong while establishing handshake");
+        }
 
     }
 }

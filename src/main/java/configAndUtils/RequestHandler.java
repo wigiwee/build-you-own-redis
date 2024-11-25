@@ -1,18 +1,17 @@
+package configAndUtils;
+
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
-import java.math.BigInteger;
 import java.net.Socket;
 import java.util.Arrays;
 import java.util.Base64;
+import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
-
-import configAndUtils.Config;
-import configAndUtils.RdbUtils;
-import configAndUtils.Utils;
+import java.util.concurrent.LinkedBlockingQueue;
 
 public class RequestHandler {
 
@@ -20,13 +19,14 @@ public class RequestHandler {
     static ConcurrentHashMap<String, String> keyValueHashMap = new ConcurrentHashMap<>();
     static ConcurrentHashMap<String, Long> keyExpiryHashMap = new ConcurrentHashMap<>();
 
+    public static BlockingQueue<String[]> replicationQueue = new LinkedBlockingQueue<>();
+
     public RequestHandler(Socket clientSocket) {
         this.clientSocket = clientSocket;
     }
 
     public void run() {
         try (
-                OutputStream out = clientSocket.getOutputStream();
                 BufferedReader reader = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
                 BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(clientSocket.getOutputStream()));) {
             String content;
@@ -76,6 +76,8 @@ public class RequestHandler {
                         writer.flush();
 
                     } else if (args[0].equalsIgnoreCase("get") && numArgs == 2) {
+                        if (Config.role == Roles.SLAVE)
+                            replicationQueue.add(args);
 
                         if (keyValueHashMap.containsKey(args[1])) {
                             if (keyExpiryHashMap.containsKey(args[1])) {
@@ -176,31 +178,13 @@ public class RequestHandler {
                         writer.write("+FULLRESYNC 8371b4fb1155b71f4a04d3e1bc3e18c4a990aeeb 0" + Config.CRLF);
                         writer.flush();
 
-                        // byte[] contents = HexFormat.of().parseHex(
-                        //         "524544495330303131fa0972656469732d76657205372e322e30fa0a72656469732d62697473c040fa056374696d65c26d08bc65fa08757365642d6d656dc2b0c41000fa08616f662d62617365c000fff06e3bfec0ff5aa2");
-                        // StringBuilder output = new StringBuilder();
-                        // for (byte b : contents) {
-                        //     output.append(b & 0xFFFFFFFFL);
-                        //     // System.out.println(b);
-                        // }
-                        // String rdbHex = "524544495330303131fa0972656469732d76657205372e322e30fa0a72656469732d62697473c040fa056374696d65c26d08bc65fa08757365642d6d656dc2b0c41000fa08616f662d62617365c000fff06e3bfec0ff5aa2";
-                        // byte[] rdbContent = new BigInteger(rdbHex, 16).toByteArray();
-                        // System.out.println(Arrays.toString(rdbContent));
-                        // StringBuilder output = new StringBuilder();
-                        // for (int i  : rdbContent) {
-                        //     output.append(Integer.toUnsignedString(i));
-                        // }
-                        // writer.write("$" + rdbContent.length + Config.CRLF + output.toString());
-                        // writer.flush();
-                        // writer.write("$88\r\n524544495330303131fa0972656469732d76657205372e322e30fa0a72656469732d62697473c040fa056374696d65c26d08bc65fa08757365642d6d656dc2b0c41000fa08616f662d62617365c000fff06e3bfec0ff5aa2");
-
+                        OutputStream out = clientSocket.getOutputStream();
                         String EMPTY_RDB_FILE = "UkVESVMwMDEx+glyZWRpcy12ZXIFNy4yLjD6CnJlZGlzLWJpdHPAQPoFY3RpbWXCbQi8ZfoIdXNlZC1tZW3CsMQQAPoIYW9mLWJhc2XAAP/wbjv+wP9aog==";
                         byte[] rdbFile = Base64.getDecoder().decode(EMPTY_RDB_FILE);
                         byte[] sizePrefix = ("$" + rdbFile.length + "\r\n").getBytes();
                         out.write(sizePrefix);
                         out.write(rdbFile);
 
-                        writer.flush();
                     } else {
 
                         writer.write("-ERROR: Unknown command or incorrect arguments\r\n");

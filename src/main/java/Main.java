@@ -5,40 +5,37 @@ import java.net.UnknownHostException;
 
 import configAndUtils.Config;
 import configAndUtils.RdbUtils;
+import configAndUtils.RequestHandler;
 import configAndUtils.Roles;
 import configAndUtils.Utils;
 
 public class Main {
 
-
     public static void main(String[] args) throws UnknownHostException, IOException {
 
-        
         Utils.readConfiguration(args);
 
-        if(!Config.dir.isEmpty() && !Config.dbfilename.isEmpty()){
+        if (!Config.dir.isEmpty() && !Config.dbfilename.isEmpty()) {
             RdbUtils.processRdbFile();
         }
-        
-        if(Config.hostPort !=-1 && ! Config.hostName.isEmpty()){
-            Config.role = Roles.SLAVE;
+
+        if (Config.role == Roles.SLAVE) {
             Utils.handshake();
         }
-
         System.out.println("Logs from your program will appear here!");
-        
+
         ServerSocket serverSocket = null;
         Socket clientSocket = null;
         try {
             serverSocket = new ServerSocket(Config.port);
             serverSocket.setReuseAddress(true);
-            
+
             while (true) {
-    
+
                 clientSocket = serverSocket.accept();
                 RequestHandler requestHandler = new RequestHandler(clientSocket);
                 Thread.startVirtualThread(() -> {
-                        requestHandler.run();
+                    requestHandler.run();
                 });
             }
         } catch (IOException e) {
