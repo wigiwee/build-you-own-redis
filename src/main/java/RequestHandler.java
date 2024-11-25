@@ -185,7 +185,7 @@ public class RequestHandler {
                         System.out.println(Arrays.toString(rdbContent));
                         StringBuilder output = new StringBuilder();
                         for (int i  : rdbContent) {
-                            output.append(Integer.toBinaryString(i));
+                            output.append(Integer.toHexString(i));
                         }
                         writer.write("$" + rdbContent.length + Config.CRLF + output.toString());
                         // writer.flush();
