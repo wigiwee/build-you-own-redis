@@ -6,8 +6,6 @@ import java.io.OutputStreamWriter;
 import java.math.BigInteger;
 import java.net.Socket;
 import java.util.Arrays;
-import java.util.Base64;
-import java.util.HexFormat;
 import java.util.concurrent.ConcurrentHashMap;
 
 import configAndUtils.Config;
@@ -184,14 +182,15 @@ public class RequestHandler {
                         // }
                         String rdbHex = "524544495330303131fa0972656469732d76657205372e322e30fa0a72656469732d62697473c040fa056374696d65c26d08bc65fa08757365642d6d656dc2b0c41000fa08616f662d62617365c000fff06e3bfec0ff5aa2";
                         byte[] rdbContent = new BigInteger(rdbHex, 16).toByteArray();
+                        System.out.println(Arrays.toString(rdbContent));
                         StringBuilder output = new StringBuilder();
-                        for (byte b : rdbContent ) {
-                            output.append(b & 0b11111111);
+                        for (int i  : rdbContent) {
+                            output.append(Integer.toBinaryString(i));
                         }
-
                         writer.write("$" + output.length() + Config.CRLF + output.toString());
                         // writer.flush();
                         // writer.write("$88\r\n524544495330303131fa0972656469732d76657205372e322e30fa0a72656469732d62697473c040fa056374696d65c26d08bc65fa08757365642d6d656dc2b0c41000fa08616f662d62617365c000fff06e3bfec0ff5aa2");
+
                         writer.flush();
                     } else {
 
