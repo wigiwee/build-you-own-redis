@@ -113,12 +113,14 @@ public class Utils {
 
     public static void handshake() {
 
-        try (Socket socket = new Socket(Config.hostName, Config.hostPort)) {
+        try (Socket socket = new Socket(Config.hostName, Config.hostPort);
+                Socket replicaItself = new Socket("127.0.0.1", Config.port);) {
             BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
             BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 
             // stage 1
             writer.write(RESP2format("PING"));
+            
             writer.flush();
             System.out.println(reader.readLine());
 
@@ -144,8 +146,7 @@ public class Utils {
 
             // here replica receives command from master and then replica sends the same
             // command to iself to be be processed
-            
-            Socket replicaItself = new Socket("127.0.0.1", Config.port);
+
             OutputStream out = replicaItself.getOutputStream();
             InputStream in = replicaItself.getInputStream();
 
@@ -170,10 +171,10 @@ public class Utils {
                             continue;
                         }
                     }
-                        
-                        String command = encodeCommandArray(args);
-                        Config.bytesProcessedBySlave = command.length() / 2;
-                        out.write(command.getBytes());
+
+                    String command = encodeCommandArray(args);
+                    Config.bytesProcessedBySlave = command.length() / 2;
+                    out.write(command.getBytes());
                 }
             }
         } catch (IOException e) {
