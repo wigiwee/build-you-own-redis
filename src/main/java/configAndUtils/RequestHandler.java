@@ -190,15 +190,16 @@ public class RequestHandler {
                         out.write(sizePrefix);
                         out.write(rdbFile);
 
-                        // while (true) {
-                        //     if (RequestHandler.replicationQueue.size() != 0) {
-                        //         String command = Utils.encodeCommandArray(replicationQueue.poll());
-                        //         writer.write(command);
-                        //         writer.flush();
-                        //         Config.bytesProcessedByMaster += command.length() / 2;
-                        //         System.out.println("Command sent to replica: " + command);
-                        //     }
-                        // }
+                        while (true) {
+                            if (RequestHandler.replicationQueue.size() != 0) {
+                                String command = Utils.encodeCommandArray(replicationQueue.poll());
+                                writer.write(command);
+                                writer.flush();
+                                System.out.println(reader.readLine());
+                                Config.bytesProcessedByMaster += command.length() / 2;
+                                System.out.println("Command sent to replica: " + command);
+                            }
+                        }
 
                     } else {
 
