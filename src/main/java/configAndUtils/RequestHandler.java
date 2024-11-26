@@ -10,6 +10,7 @@ import java.io.Writer;
 import java.net.Socket;
 import java.util.Arrays;
 import java.util.Base64;
+import java.util.Iterator;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -77,8 +78,12 @@ public class RequestHandler {
                         }
                         writer.write("+OK\r\n");
                         writer.flush();
-                        System.out.println(replicationQueue.toString());
+                        Iterator<String[]> iT = replicationQueue.iterator();
+                        System.out.println("Contents of the queue are :");
 
+                        while (iT.hasNext()) {
+                            System.out.println(iT.next());
+                        }
                     } else if (args[0].equalsIgnoreCase("get") && numArgs == 2) {
 
                         if (keyValueHashMap.containsKey(args[1])) {
@@ -193,23 +198,23 @@ public class RequestHandler {
                         out.write(rdbFile);
 
                         // Thread.startVirtualThread(new Runnable() {
-                        //     public void run() {
+                        // public void run() {
 
-                        //         while (true) {
-                        //             if (RequestHandler.replicationQueue.size() != 0) {
-                        //                 String command = Utils.encodeCommandArray(replicationQueue.poll());
-                        //                 System.out.println("command: " + command);
-                        //                 try {
-                        //                     writer.write(command);
-                        //                     writer.flush();
-                        //                 } catch (IOException e) {
-                        //                     e.printStackTrace();
-                        //                 }
-                        //                 Config.bytesProcessedByMaster += command.length() / 2;
-                        //                 System.out.println("Command sent to replica: " + command);
-                        //             }
-                        //         }
-                        //     }
+                        // while (true) {
+                        // if (RequestHandler.replicationQueue.size() != 0) {
+                        // String command = Utils.encodeCommandArray(replicationQueue.poll());
+                        // System.out.println("command: " + command);
+                        // try {
+                        // writer.write(command);
+                        // writer.flush();
+                        // } catch (IOException e) {
+                        // e.printStackTrace();
+                        // }
+                        // Config.bytesProcessedByMaster += command.length() / 2;
+                        // System.out.println("Command sent to replica: " + command);
+                        // }
+                        // }
+                        // }
                         // });
 
                     } else {
