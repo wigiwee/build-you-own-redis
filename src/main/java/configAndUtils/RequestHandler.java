@@ -69,12 +69,12 @@ public class RequestHandler {
                         }
                         writer.write("+OK\r\n");
                         writer.flush();
-                        
-                        if(Config.role.equals(Roles.MASTER)){
-                            for (OutputStream replica  : Config.replicas) {
-                                replica.write(Utils.encodeCommandArray(args).getBytes());
-                        }
-                            
+
+                        // if (Config.role.equals(Roles.MASTER)) {
+                        //     for (OutputStream replica : Config.replicas) {
+                        //         replica.write(Utils.encodeCommandArray(args).getBytes());
+                        //     }
+
                         }
                     } else if (args[0].equalsIgnoreCase("get") && numArgs == 2) {
 
