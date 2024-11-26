@@ -193,13 +193,12 @@ public class RequestHandler {
                         while (true) {
                             if (RequestHandler.replicationQueue.size() != 0) {
                                 String command = Utils.encodeCommandArray(replicationQueue.poll());
+                                System.out.println("command: " +command);
                                 writer.write(command);
                                 writer.flush();
                                 Config.bytesProcessedByMaster += command.length() / 2;
                                 System.out.println("Command sent to replica: " + command);
                             }
-                            System.out.println("i read this: " + reader.readLine());
-                            System.out.println("I am stuck here");
                         }
 
                     } else {
