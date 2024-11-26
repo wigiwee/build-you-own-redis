@@ -142,8 +142,6 @@ public class Utils {
             writer.flush();
             System.out.println(reader.readLine());
 
-            Config.replicas.add(socket.getOutputStream());
-
         } catch (IOException e) {
             System.out.println("Something went wrong while establishing handshake");
         }

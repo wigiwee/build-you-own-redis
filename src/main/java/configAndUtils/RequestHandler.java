@@ -188,7 +188,7 @@ public class RequestHandler {
                         byte[] sizePrefix = ("$" + rdbFile.length + "\r\n").getBytes();
                         out.write(sizePrefix);
                         out.write(rdbFile);
-
+                        Config.replicas.add(out);
                     } else {
 
                         writer.write("-ERROR: Unknown command or incorrect arguments\r\n");
