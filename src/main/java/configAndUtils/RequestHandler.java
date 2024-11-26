@@ -191,25 +191,25 @@ public class RequestHandler {
                         out.write(sizePrefix);
                         out.write(rdbFile);
 
-                        Thread.startVirtualThread(new Runnable() {
-                            public void run() {
+                        // Thread.startVirtualThread(new Runnable() {
+                        //     public void run() {
 
-                                while (true) {
-                                    if (RequestHandler.replicationQueue.size() != 0) {
-                                        String command = Utils.encodeCommandArray(replicationQueue.poll());
-                                        System.out.println("command: " + command);
-                                        try {
-                                            writer.write(command);
-                                            writer.flush();
-                                        } catch (IOException e) {
-                                            e.printStackTrace();
-                                        }
-                                        Config.bytesProcessedByMaster += command.length() / 2;
-                                        System.out.println("Command sent to replica: " + command);
-                                    }
-                                }
-                            }
-                        });
+                        //         while (true) {
+                        //             if (RequestHandler.replicationQueue.size() != 0) {
+                        //                 String command = Utils.encodeCommandArray(replicationQueue.poll());
+                        //                 System.out.println("command: " + command);
+                        //                 try {
+                        //                     writer.write(command);
+                        //                     writer.flush();
+                        //                 } catch (IOException e) {
+                        //                     e.printStackTrace();
+                        //                 }
+                        //                 Config.bytesProcessedByMaster += command.length() / 2;
+                        //                 System.out.println("Command sent to replica: " + command);
+                        //             }
+                        //         }
+                        //     }
+                        // });
 
                     } else {
 
