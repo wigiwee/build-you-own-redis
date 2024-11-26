@@ -174,7 +174,7 @@ public class RequestHandler {
                             writer.flush();
                         } else if (args[1].equalsIgnoreCase("getack")) {
                             String command = Utils.RESP2format("REPLCONF ACK " + Config.bytesProcessedBySlave);
-                            // writer.write(command);
+                            writer.write(command);
                             Config.bytesProcessedBySlave = command.length() / 2;
                             writer.flush();
                         }

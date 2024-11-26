@@ -116,7 +116,7 @@ public class Utils {
         try (Socket socket = new Socket(Config.hostName, Config.hostPort)) {
             BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
             BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-            
+
             // stage 1
             writer.write(RESP2format("PING"));
             writer.flush();
@@ -133,8 +133,8 @@ public class Utils {
             System.out.println(reader.readLine());
 
             // configuring replica to send ACK
-            writer.write(RESP2format("REPLCONF GETACK *"));
-            writer.flush();
+            // writer.write(RESP2format("REPLCONF GETACK *"));
+            // writer.flush();
 
             writer.write(Utils.RESP2format("PSYNC ? -1"));
             writer.flush();
