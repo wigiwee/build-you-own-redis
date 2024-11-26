@@ -146,8 +146,8 @@ public class Utils {
             // here replica receives command from master and then replica sends the same
             // command to iself to be be processed
 
-            OutputStream out = replicaItself.getOutputStream();
-            InputStream in = replicaItself.getInputStream();
+            // OutputStream out = replicaItself.getOutputStream();
+            // InputStream in = replicaItself.getInputStream();
 
             // while (true) {
             //     String content = "";
