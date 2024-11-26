@@ -6,11 +6,9 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
-import java.io.Writer;
 import java.net.Socket;
 import java.util.Arrays;
 import java.util.Base64;
-import java.util.Iterator;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -20,8 +18,6 @@ public class RequestHandler {
     public Socket clientSocket;
     static ConcurrentHashMap<String, String> keyValueHashMap = new ConcurrentHashMap<>();
     static ConcurrentHashMap<String, Long> keyExpiryHashMap = new ConcurrentHashMap<>();
-
-    public static BlockingQueue<String[]> replicationQueue = new LinkedBlockingQueue<>();
 
     public RequestHandler(Socket clientSocket) {
         this.clientSocket = clientSocket;
@@ -67,9 +63,6 @@ public class RequestHandler {
                         writer.flush();
 
                     } else if (args[0].equalsIgnoreCase("set") && numArgs >= 3) {
-                        if (Config.role == Roles.MASTER)
-                            replicationQueue.add(args);
-
                         keyValueHashMap.put(args[1], args[2]);
                         if (numArgs > 3) {
                             if (args[3].equalsIgnoreCase("px")) {
@@ -78,11 +71,10 @@ public class RequestHandler {
                         }
                         writer.write("+OK\r\n");
                         writer.flush();
-                        Iterator<String[]> iT = replicationQueue.iterator();
-                        System.out.println("Contents of the queue are :");
-
-                        while (iT.hasNext()) {
-                            System.out.println(Arrays.toString(iT.next()));
+                        
+                        for (OutputStream replica  : Config.replicas) {
+                            replica.write(Utils.encodeCommandArray(args).getBytes());
+                            
                         }
                     } else if (args[0].equalsIgnoreCase("get") && numArgs == 2) {
 

@@ -113,8 +113,7 @@ public class Utils {
 
     public static void handshake() {
 
-        try (Socket socket = new Socket(Config.hostName, Config.hostPort);
-                Socket replicaItself = new Socket("127.0.0.1", Config.port)) {
+        try (Socket socket = new Socket(Config.hostName, Config.hostPort)) {
 
             BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
             BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
@@ -143,41 +142,6 @@ public class Utils {
             writer.flush();
             System.out.println(reader.readLine());
 
-            Config.isHandshakeComplete = true;
-
-            // here replica receives command from master and then replica sends the same
-            // command to iself to be be processed
-
-            OutputStream out = replicaItself.getOutputStream();
-            InputStream in = replicaItself.getInputStream();
-
-            while (true) {
-                String content = "";
-
-                if (content.startsWith("*")) {
-                    int numArgs = Integer.parseInt(content.substring(1));
-                    String[] args = new String[numArgs];
-                    for (int i = 0; i < numArgs; i++) {
-                        String lengthLine = reader.readLine();
-                        if (!lengthLine.startsWith("$")) {
-                            writer.write("-ERROR: Invalid RESP format\r\n");
-                            writer.flush();
-                            continue;
-                        }
-                        int length = Integer.parseInt(lengthLine.substring(1));
-                        args[i] = reader.readLine();
-                        if (args[i].length() != length) {
-                            writer.write("-ERROR: Length mismatch\r\n");
-                            writer.flush();
-                            continue;
-                        }
-                    }
-
-                    String command = encodeCommandArray(args);
-                    Config.bytesProcessedBySlave = command.length() / 2;
-                    out.write(command.getBytes());
-                }
-            }
         } catch (IOException e) {
             System.out.println("Something went wrong while establishing handshake");
         }
