@@ -144,6 +144,11 @@ public class Utils {
 
             // here replica receives command from master and then replica sends the same
             // command to iself to be be processed
+            
+            Socket replicaItself = new Socket("127.0.0.1", Config.port);
+            OutputStream out = replicaItself.getOutputStream();
+            InputStream in = replicaItself.getInputStream();
+
             while (true) {
                 String content = "";
 
@@ -165,17 +170,10 @@ public class Utils {
                             continue;
                         }
                     }
-
-                    // establishing connection to itself
-                    try (Socket replicaItself = new Socket("127.0.0.1", Config.port)) {
-
-                        OutputStream out = replicaItself.getOutputStream();
-                        InputStream in = replicaItself.getInputStream();
-
+                        
                         String command = encodeCommandArray(args);
                         Config.bytesProcessedBySlave = command.length() / 2;
                         out.write(command.getBytes());
-                    }
                 }
             }
         } catch (IOException e) {
