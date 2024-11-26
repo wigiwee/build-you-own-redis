@@ -120,7 +120,7 @@ public class Utils {
 
             // stage 1
             writer.write(RESP2format("PING"));
-            
+
             writer.flush();
             System.out.println(reader.readLine());
 
@@ -150,33 +150,33 @@ public class Utils {
             OutputStream out = replicaItself.getOutputStream();
             InputStream in = replicaItself.getInputStream();
 
-            while (true) {
-                String content = "";
+            // while (true) {
+            //     String content = "";
 
-                if (content.startsWith("*")) {
-                    int numArgs = Integer.parseInt(content.substring(1));
-                    String[] args = new String[numArgs];
-                    for (int i = 0; i < numArgs; i++) {
-                        String lengthLine = reader.readLine();
-                        if (!lengthLine.startsWith("$")) {
-                            writer.write("-ERROR: Invalid RESP format\r\n");
-                            writer.flush();
-                            continue;
-                        }
-                        int length = Integer.parseInt(lengthLine.substring(1));
-                        args[i] = reader.readLine();
-                        if (args[i].length() != length) {
-                            writer.write("-ERROR: Length mismatch\r\n");
-                            writer.flush();
-                            continue;
-                        }
-                    }
+            //     if (content.startsWith("*")) {
+            //         int numArgs = Integer.parseInt(content.substring(1));
+            //         String[] args = new String[numArgs];
+            //         for (int i = 0; i < numArgs; i++) {
+            //             String lengthLine = reader.readLine();
+            //             if (!lengthLine.startsWith("$")) {
+            //                 writer.write("-ERROR: Invalid RESP format\r\n");
+            //                 writer.flush();
+            //                 continue;
+            //             }
+            //             int length = Integer.parseInt(lengthLine.substring(1));
+            //             args[i] = reader.readLine();
+            //             if (args[i].length() != length) {
+            //                 writer.write("-ERROR: Length mismatch\r\n");
+            //                 writer.flush();
+            //                 continue;
+            //             }
+            //         }
 
-                    String command = encodeCommandArray(args);
-                    Config.bytesProcessedBySlave = command.length() / 2;
-                    out.write(command.getBytes());
-                }
-            }
+            //         String command = encodeCommandArray(args);
+            //         Config.bytesProcessedBySlave = command.length() / 2;
+            //         out.write(command.getBytes());
+            //     }
+            // }
         } catch (IOException e) {
             System.out.println("Something went wrong while establishing handshake");
         }
