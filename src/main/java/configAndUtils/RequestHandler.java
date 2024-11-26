@@ -65,6 +65,8 @@ public class RequestHandler {
                         writer.flush();
 
                     } else if (args[0].equalsIgnoreCase("set") && numArgs >= 3) {
+                        if (Config.role == Roles.MASTER)
+                            replicationQueue.add(args);
 
                         keyValueHashMap.put(args[1], args[2]);
                         if (numArgs > 3) {
@@ -76,8 +78,6 @@ public class RequestHandler {
                         writer.flush();
 
                     } else if (args[0].equalsIgnoreCase("get") && numArgs == 2) {
-                        if (Config.role == Roles.SLAVE)
-                            replicationQueue.add(args);
 
                         if (keyValueHashMap.containsKey(args[1])) {
                             if (keyExpiryHashMap.containsKey(args[1])) {
@@ -172,9 +172,14 @@ public class RequestHandler {
                             System.out.println("capabilitles: " + args[2]);
                             writer.write("+OK" + Config.CRLF);
                             writer.flush();
+                        } else if (args[1].equalsIgnoreCase("getack")) {
+                            String command = Utils.RESP2format("REPLCONF ACK " + Config.bytesProcessedBySlave);
+                            writer.write(command);
+                            Config.bytesProcessedBySlave = command.length() / 2;
+                            writer.flush();
                         }
 
-                    } else if (args[0].equalsIgnoreCase("psync")) {
+                    } else if (args[0].equalsIgnoreCase("psync") && Config.role.equals(Roles.MASTER)) {
                         writer.write("+FULLRESYNC 8371b4fb1155b71f4a04d3e1bc3e18c4a990aeeb 0" + Config.CRLF);
                         writer.flush();
 
@@ -184,6 +189,16 @@ public class RequestHandler {
                         byte[] sizePrefix = ("$" + rdbFile.length + "\r\n").getBytes();
                         out.write(sizePrefix);
                         out.write(rdbFile);
+
+                        while (true) {
+                            if (RequestHandler.replicationQueue.size() != 0) {
+                                String command = Utils.encodeCommandArray(replicationQueue.poll());
+                                writer.write(command);
+                                writer.flush();
+                                Config.bytesProcessedByMaster += command.length() / 2;
+                                System.out.println("Command sent to replica: " + command);
+                            }
+                        }
 
                     } else {
 

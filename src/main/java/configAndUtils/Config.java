@@ -22,5 +22,22 @@ public class Config {
     public static String version = "";
 
     public static boolean isHandshakeComplete = false;
+
+    public static boolean giveAck = false;
+
+    public static int bytesProcessedBySlave = 0;
+
+    public static int bytesProcessedByMaster = 0;
     
+    public static void printConfig(){
+        System.out.println("dir: " + dir);
+        System.out.println("dbfile: " + dbfilename);
+        System.out.println("server port: " + port);
+        System.out.println("role: " + role);
+        if(role.equals(Roles.SLAVE)){
+            System.out.println("\t hostname: " + hostName);
+            System.out.println("\t hostport: " + hostPort);
+        }
+        System.out.println("version: " + version);
+    }
 }

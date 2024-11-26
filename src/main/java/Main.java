@@ -19,9 +19,10 @@ public class Main {
             RdbUtils.processRdbFile();
         }
 
-        if (Config.role == Roles.SLAVE) {
+        if (Config.role.equals(Roles.SLAVE)) {
             Utils.handshake();
         }
+        Config.printConfig();
         System.out.println("Logs from your program will appear here!");
 
         ServerSocket serverSocket = null;

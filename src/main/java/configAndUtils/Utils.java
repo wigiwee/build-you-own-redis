@@ -5,6 +5,7 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.net.Socket;
 
@@ -126,21 +127,55 @@ public class Utils {
             writer.flush();
             System.out.println(reader.readLine());
 
+            // stage 3
             writer.write(RESP2format("REPLCONF capa psync2"));
             writer.flush();
             System.out.println(reader.readLine());
 
+            // configuring replica to send ACK
+            writer.write(RESP2format("REPLCONF GETACK *"));
+            writer.flush();
+
             writer.write(Utils.RESP2format("PSYNC ? -1"));
             writer.flush();
-            System.out.println(reader.readLine()); 
+            System.out.println(reader.readLine());
 
             Config.isHandshakeComplete = true;
 
+            // here replica receives command from master and then replica sends the same
+            // command to iself to be be processed
             while (true) {
-                if (RequestHandler.replicationQueue.size() != 0) {
-                    System.out.println(encodeCommandArray(RequestHandler.replicationQueue.peek()));
-                    writer.write(encodeCommandArray(RequestHandler.replicationQueue.poll()));
-                    writer.flush();
+                String content = "";
+
+                if (content.startsWith("*")) {
+                    int numArgs = Integer.parseInt(content.substring(1));
+                    String[] args = new String[numArgs];
+                    for (int i = 0; i < numArgs; i++) {
+                        String lengthLine = reader.readLine();
+                        if (!lengthLine.startsWith("$")) {
+                            writer.write("-ERROR: Invalid RESP format\r\n");
+                            writer.flush();
+                            continue;
+                        }
+                        int length = Integer.parseInt(lengthLine.substring(1));
+                        args[i] = reader.readLine();
+                        if (args[i].length() != length) {
+                            writer.write("-ERROR: Length mismatch\r\n");
+                            writer.flush();
+                            continue;
+                        }
+                    }
+
+                    // establishing connection to itself
+                    try (Socket replicaItself = new Socket("127.0.0.1", Config.port)) {
+
+                        OutputStream out = replicaItself.getOutputStream();
+                        InputStream in = replicaItself.getInputStream();
+
+                        String command = encodeCommandArray(args);
+                        Config.bytesProcessedBySlave = command.length() / 2;
+                        out.write(command.getBytes());
+                    }
                 }
             }
         } catch (IOException e) {
