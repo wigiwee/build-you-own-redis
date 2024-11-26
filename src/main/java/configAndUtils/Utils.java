@@ -113,8 +113,7 @@ public class Utils {
 
     public static void handshake() {
 
-        try (Socket socket = new Socket(Config.hostName, Config.hostPort);
-                Socket replicaItself = new Socket("127.0.0.1", Config.port);) {
+        try (Socket socket = new Socket(Config.hostName, Config.hostPort)) {
             BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
             BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 
