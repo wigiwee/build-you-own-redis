@@ -75,7 +75,7 @@ public class RequestHandler {
                         //         replica.write(Utils.encodeCommandArray(args).getBytes());
                         //     }
 
-                        }
+                        // }
                     } else if (args[0].equalsIgnoreCase("get") && numArgs == 2) {
 
                         if (keyValueHashMap.containsKey(args[1])) {
