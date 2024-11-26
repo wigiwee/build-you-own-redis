@@ -113,7 +113,7 @@ public class Utils {
     public static void handshake() {
 
         try (Socket socket = new Socket(Config.hostName, Config.hostPort)) {
-
+            System.out.println("doing handshake");
             BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
             BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 
@@ -139,8 +139,11 @@ public class Utils {
 
             writer.write(Utils.RESP2format("PSYNC ? -1"));
             writer.flush();
-            System.out.println(reader.readLine());
 
+            reader.readLine();
+
+            while(true);
+            
         } catch (IOException e) {
             System.out.println("Something went wrong while establishing handshake");
         }

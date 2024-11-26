@@ -1,7 +1,11 @@
 package configAndUtils;
 
 import java.io.OutputStream;
+import java.net.Socket;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 public class Config {
@@ -32,7 +36,9 @@ public class Config {
 
     public static int bytesProcessedByMaster = 0;
 
-    public static Set<OutputStream> replicas = new HashSet<>();
+    // public static Set<OutputStream> replicas = Collections.synchronizedSet(new HashSet<>());
+
+    public static List<OutputStream> replicas = Collections.synchronizedList(new ArrayList<OutputStream>());
 
     public static void printConfig() {
         System.out.println("dir: " + dir);

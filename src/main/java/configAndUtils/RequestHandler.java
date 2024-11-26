@@ -7,9 +7,11 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.net.Socket;
+import java.net.SocketException;
 import java.util.Arrays;
 import java.util.Base64;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Stream;
 
 public class RequestHandler {
 
@@ -26,6 +28,11 @@ public class RequestHandler {
                 BufferedReader reader = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
                 BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(clientSocket.getOutputStream()));) {
             String content;
+
+            if (Config.role.equals(Roles.SLAVE) && Config.isHandshakeComplete == false) {
+                Utils.handshake();
+                Config.isHandshakeComplete = true;
+            }
             while ((content = reader.readLine()) != null) {
                 // Parse the RESP array
                 if (content.startsWith("*")) {
@@ -61,6 +68,8 @@ public class RequestHandler {
                         writer.flush();
 
                     } else if (args[0].equalsIgnoreCase("set") && numArgs >= 3) {
+                        System.out.println("length: " + Config.replicas);
+
                         keyValueHashMap.put(args[1], args[2]);
                         if (numArgs > 3) {
                             if (args[3].equalsIgnoreCase("px")) {
@@ -70,14 +79,14 @@ public class RequestHandler {
                         writer.write("+OK\r\n");
                         writer.flush();
 
-                        // if (Config.role.equals(Roles.MASTER)) {
-                        //     for (OutputStream replica : Config.replicas) {
-                        //         replica.write(Utils.encodeCommandArray(args).getBytes());
-                        //     }
+                        if (Config.role.equals(Roles.MASTER)) {
+                            for (OutputStream replica : Config.replicas) {
+                                System.out.println("Sending commands");
+                                replica.write(Utils.encodeCommandArray(args).getBytes());
+                            }
 
-                        // }
+                        }
                     } else if (args[0].equalsIgnoreCase("get") && numArgs == 2) {
-
                         if (keyValueHashMap.containsKey(args[1])) {
                             if (keyExpiryHashMap.containsKey(args[1])) {
                                 if (System.currentTimeMillis() < keyExpiryHashMap.get(args[1])) {
@@ -178,17 +187,26 @@ public class RequestHandler {
                             writer.flush();
                         }
 
-                    } else if (args[0].equalsIgnoreCase("psync") && Config.role.equals(Roles.MASTER)) {
+                    } else if (args[0].equalsIgnoreCase("psync")) {
                         writer.write("+FULLRESYNC 8371b4fb1155b71f4a04d3e1bc3e18c4a990aeeb 0" + Config.CRLF);
                         writer.flush();
-
                         OutputStream out = clientSocket.getOutputStream();
                         String EMPTY_RDB_FILE = "UkVESVMwMDEx+glyZWRpcy12ZXIFNy4yLjD6CnJlZGlzLWJpdHPAQPoFY3RpbWXCbQi8ZfoIdXNlZC1tZW3CsMQQAPoIYW9mLWJhc2XAAP/wbjv+wP9aog==";
                         byte[] rdbFile = Base64.getDecoder().decode(EMPTY_RDB_FILE);
                         byte[] sizePrefix = ("$" + rdbFile.length + "\r\n").getBytes();
-                        out.write(sizePrefix);
-                        out.write(rdbFile);
+                        byte[] response = new byte[rdbFile.length + sizePrefix.length];
+                        
+                        for(int i = 0 ; i < sizePrefix.length ; i++){
+                            response[i]= sizePrefix[i];
+                        }
+                        for (int i = sizePrefix.length ; i < sizePrefix.length + rdbFile.length; i++){
+                            response[i] = rdbFile[i- sizePrefix.length];
+
+                        }
+                        out.write(response);
+                        System.out.println("I was there and i am about to do it");
                         Config.replicas.add(out);
+                        System.out.println("i am here and i didi it");
                     } else {
 
                         writer.write("-ERROR: Unknown command or incorrect arguments\r\n");
