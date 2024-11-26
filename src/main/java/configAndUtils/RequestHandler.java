@@ -77,6 +77,7 @@ public class RequestHandler {
                         }
                         writer.write("+OK\r\n");
                         writer.flush();
+                        System.out.println(replicationQueue.toString());
 
                     } else if (args[0].equalsIgnoreCase("get") && numArgs == 2) {
 
