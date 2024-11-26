@@ -195,11 +195,11 @@ public class RequestHandler {
                                 String command = Utils.encodeCommandArray(replicationQueue.poll());
                                 writer.write(command);
                                 writer.flush();
-                                System.out.println(reader.readLine());
-                                System.out.println("I am stuck here");
                                 Config.bytesProcessedByMaster += command.length() / 2;
                                 System.out.println("Command sent to replica: " + command);
                             }
+                            System.out.println("i read this: " + reader.readLine());
+                            System.out.println("I am stuck here");
                         }
 
                     } else {
