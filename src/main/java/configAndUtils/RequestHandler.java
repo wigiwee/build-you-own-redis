@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.io.Writer;
 import java.net.Socket;
 import java.util.Arrays;
 import java.util.Base64;
@@ -190,16 +191,25 @@ public class RequestHandler {
                         out.write(sizePrefix);
                         out.write(rdbFile);
 
-                        while (true) {
-                            if (RequestHandler.replicationQueue.size() != 0) {
-                                String command = Utils.encodeCommandArray(replicationQueue.poll());
-                                System.out.println("command: " +command);
-                                writer.write(command);
-                                writer.flush();
-                                Config.bytesProcessedByMaster += command.length() / 2;
-                                System.out.println("Command sent to replica: " + command);
+                        Thread.startVirtualThread(new Runnable() {
+                            public void run() {
+
+                                while (true) {
+                                    if (RequestHandler.replicationQueue.size() != 0) {
+                                        String command = Utils.encodeCommandArray(replicationQueue.poll());
+                                        System.out.println("command: " + command);
+                                        try {
+                                            writer.write(command);
+                                            writer.flush();
+                                        } catch (IOException e) {
+                                            e.printStackTrace();
+                                        }
+                                        Config.bytesProcessedByMaster += command.length() / 2;
+                                        System.out.println("Command sent to replica: " + command);
+                                    }
+                                }
                             }
-                        }
+                        });
 
                     } else {
 
