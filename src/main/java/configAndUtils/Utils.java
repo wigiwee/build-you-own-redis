@@ -132,7 +132,7 @@ public class Utils {
 
             writer.write(Utils.RESP2format("PSYNC ? -1"));
             writer.flush();
-            System.out.println(reader.readLine());
+            System.out.println(reader.readLine()); 
 
             Config.isHandshakeComplete = true;
 
