@@ -82,7 +82,7 @@ public class RequestHandler {
                         System.out.println("Contents of the queue are :");
 
                         while (iT.hasNext()) {
-                            System.out.println(iT.next());
+                            System.out.println(Arrays.toString(iT.next()));
                         }
                     } else if (args[0].equalsIgnoreCase("get") && numArgs == 2) {
 
