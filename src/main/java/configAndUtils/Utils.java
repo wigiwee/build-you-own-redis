@@ -62,7 +62,7 @@ public class Utils {
         return output.toString();
     }
 
-    
+
     public static String encodeCommandArray(String[] commands) {
         StringBuilder output = new StringBuilder();
         output.append("*").append(commands.length);
@@ -143,16 +143,9 @@ public class Utils {
 
             writer.write(Utils.RESP2format("PSYNC ? -1"));
             writer.flush();
-            System.out.println(reader.readLine());
-            System.out.println(reader.readLine());
-            System.out.println(reader.readLine());
-            System.out.println(reader.readLine());
-            // System.out.println(reader.readLine());
-            // System.out.println(reader.readLine());
-            // System.out.println(reader.readLine());
-            // System.out.println(reader.readLine());
-            // System.out.println(reader.readLine());
-            // System.out.println(reader.readLine());
+
+            Config.isHandshakeComplete = true;
+
             OutputStream out = itself.getOutputStream();
             while(true){
                 String content;

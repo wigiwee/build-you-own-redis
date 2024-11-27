@@ -205,7 +205,7 @@ public class RequestHandler {
                         out.write("\r\n".getBytes());
                     
                         while (true) {
-                            if (request.size() != 0 && Config.role.equals(Roles.MASTER)) {
+                            if (request.size() != 0 && Config.role.equals(Roles.MASTER) && Config.isHandshakeComplete == true) {
                                 if (request.size() != 0) {
                                     String[] test = request.poll();
                                     System.out.println("Sending command to replica: " + Arrays.toString(test));

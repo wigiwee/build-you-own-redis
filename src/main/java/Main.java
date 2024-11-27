@@ -23,7 +23,6 @@ public class Main {
         if (Config.role.equals(Roles.SLAVE) && Config.isHandshakeComplete == false) {
             Thread doHandshake = new Thread(){
                 public void run(){
-                    Config.isHandshakeComplete = true;
                     Utils.handshake();
                 }
             };
