@@ -203,6 +203,7 @@ public class RequestHandler {
 
                         // clearing replica reader cache
                         out.write("\r\n".getBytes());
+                        Config.isHandshakeComplete = true;
 
                         while (true) {
                             if (request.size() != 0 && Config.role.equals(Roles.MASTER)
@@ -212,7 +213,6 @@ public class RequestHandler {
                                 out.write(Utils.encodeCommandArray(test).getBytes());
 
                             }
-
                         }
                     } else {
 

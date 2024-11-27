@@ -62,7 +62,6 @@ public class Utils {
         return output.toString();
     }
 
-
     public static String encodeCommandArray(String[] commands) {
         StringBuilder output = new StringBuilder();
         output.append("*").append(commands.length);
