@@ -34,6 +34,7 @@ public class Main {
         Config.printConfig();
         System.out.println("Logs from your program will appear here!");
 
+        
         ServerSocket serverSocket = null;
         Socket clientSocket = null;
         try {
