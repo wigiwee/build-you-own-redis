@@ -142,12 +142,16 @@ public class Utils {
 
             writer.write(Utils.RESP2format("PSYNC ? -1"));
             writer.flush();
-            // System.out.println("zeor line" + reader.readLine());
-            // System.out.println("first line" + reader.readLine());
-            // System.out.println("Second line " + reader.readLine());
-            // System.out.println("Second line " + reader.readLine());
-            // System.out.println("fourth line " + reader.readLine());
-
+            System.out.println(reader.readLine());
+            System.out.println(reader.readLine());
+            System.out.println(reader.readLine());
+            System.out.println(reader.readLine());
+            // System.out.println(reader.readLine());
+            // System.out.println(reader.readLine());
+            // System.out.println(reader.readLine());
+            // System.out.println(reader.readLine());
+            // System.out.println(reader.readLine());
+            // System.out.println(reader.readLine());
             OutputStream out = itself.getOutputStream();
             while(true){
                 String content;
