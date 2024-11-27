@@ -203,7 +203,7 @@ public class RequestHandler {
 
                         //clearing replica reader cache
                         out.write("\r\n".getBytes());
-                        
+                    
                         while (true) {
                             if (request.size() != 0 && Config.role.equals(Roles.MASTER)) {
                                 if (request.size() != 0) {
