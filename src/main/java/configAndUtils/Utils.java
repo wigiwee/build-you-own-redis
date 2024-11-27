@@ -5,8 +5,10 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.net.Socket;
+import java.util.Arrays;
 
 public class Utils {
 
@@ -112,7 +114,8 @@ public class Utils {
 
     public static void handshake() {
 
-        try (Socket socket = new Socket(Config.hostName, Config.hostPort)) {
+        try (Socket socket = new Socket(Config.hostName, Config.hostPort);
+        Socket itself = new Socket("127.0.0.1", Config.port);) {
             System.out.println("doing handshake");
             BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
             BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
@@ -139,10 +142,40 @@ public class Utils {
 
             writer.write(Utils.RESP2format("PSYNC ? -1"));
             writer.flush();
-
-            reader.readLine();
-
-            while(true);
+            
+            System.out.println("first line" + reader.readLine());
+            System.out.println("Second line " + reader.readLine());
+            // System.out.println("Second line " + reader.readLine());
+            // System.out.println("fourth line " + reader.readLine());
+            
+            OutputStream out = itself.getOutputStream();
+            while(true){
+                String content;
+                while ((content = reader.readLine()) != null) {
+                    // Parse the RESP array
+                    if (content.startsWith("*")) {
+                        int numArgs = Integer.parseInt(content.substring(1));
+                        String[] args = new String[numArgs];
+                        for (int i = 0; i < numArgs; i++) {
+                            String lengthLine = reader.readLine();
+                            if (!lengthLine.startsWith("$")) {
+                                writer.write("-ERROR: Invalid RESP format\r\n");
+                                writer.flush();
+                                continue;
+                            }
+                            int length = Integer.parseInt(lengthLine.substring(1));
+                            args[i] = reader.readLine();
+                            if (args[i].length() != length) {
+                                writer.write("-ERROR: Length mismatch\r\n");
+                                writer.flush();
+                                continue;
+                            }
+                        }
+                        System.out.println("Command received :" + Arrays.toString(args));
+                        out.write(Utils.encodeCommandArray(args).getBytes());
+                    }
+                }
+            }
             
         } catch (IOException e) {
             System.out.println("Something went wrong while establishing handshake");

@@ -38,7 +38,6 @@ public class Config {
 
     // public static Set<OutputStream> replicas = Collections.synchronizedSet(new HashSet<>());
 
-    public static List<OutputStream> replicas = Collections.synchronizedList(new ArrayList<OutputStream>());
 
     public static void printConfig() {
         System.out.println("dir: " + dir);

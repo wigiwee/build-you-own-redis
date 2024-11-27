@@ -19,6 +19,17 @@ public class Main {
             RdbUtils.processRdbFile();
         }
 
+        
+        if (Config.role.equals(Roles.SLAVE) && Config.isHandshakeComplete == false) {
+            Thread doHandshake = new Thread(){
+                public void run(){
+                    Config.isHandshakeComplete = true;
+                    Utils.handshake();
+                }
+            };
+            doHandshake.start();
+        }
+        
 
         Config.printConfig();
         System.out.println("Logs from your program will appear here!");

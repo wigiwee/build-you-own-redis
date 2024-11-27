@@ -7,17 +7,19 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.net.Socket;
-import java.net.SocketException;
 import java.util.Arrays;
 import java.util.Base64;
+import java.util.Queue;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.stream.Stream;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class RequestHandler {
 
     public Socket clientSocket;
     static ConcurrentHashMap<String, String> keyValueHashMap = new ConcurrentHashMap<>();
     static ConcurrentHashMap<String, Long> keyExpiryHashMap = new ConcurrentHashMap<>();
+
+    static Queue<String[]> request = new ConcurrentLinkedQueue<>();
 
     public RequestHandler(Socket clientSocket) {
         this.clientSocket = clientSocket;
@@ -29,10 +31,6 @@ public class RequestHandler {
                 BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(clientSocket.getOutputStream()));) {
             String content;
 
-            if (Config.role.equals(Roles.SLAVE) && Config.isHandshakeComplete == false) {
-                Utils.handshake();
-                Config.isHandshakeComplete = true;
-            }
             while ((content = reader.readLine()) != null) {
                 // Parse the RESP array
                 if (content.startsWith("*")) {
@@ -68,7 +66,6 @@ public class RequestHandler {
                         writer.flush();
 
                     } else if (args[0].equalsIgnoreCase("set") && numArgs >= 3) {
-                        System.out.println("length: " + Config.replicas);
 
                         keyValueHashMap.put(args[1], args[2]);
                         if (numArgs > 3) {
@@ -80,12 +77,10 @@ public class RequestHandler {
                         writer.flush();
 
                         if (Config.role.equals(Roles.MASTER)) {
-                            for (OutputStream replica : Config.replicas) {
-                                System.out.println("Sending commands");
-                                replica.write(Utils.encodeCommandArray(args).getBytes());
-                            }
-
+                            System.out.println("Adding args to queue: " + Arrays.toString(args));
+                            request.add(args);
                         }
+
                     } else if (args[0].equalsIgnoreCase("get") && numArgs == 2) {
                         if (keyValueHashMap.containsKey(args[1])) {
                             if (keyExpiryHashMap.containsKey(args[1])) {
@@ -195,18 +190,31 @@ public class RequestHandler {
                         byte[] rdbFile = Base64.getDecoder().decode(EMPTY_RDB_FILE);
                         byte[] sizePrefix = ("$" + rdbFile.length + "\r\n").getBytes();
                         byte[] response = new byte[rdbFile.length + sizePrefix.length];
-                        
-                        for(int i = 0 ; i < sizePrefix.length ; i++){
-                            response[i]= sizePrefix[i];
+
+                        for (int i = 0; i < sizePrefix.length; i++) {
+                            response[i] = sizePrefix[i];
                         }
-                        for (int i = sizePrefix.length ; i < sizePrefix.length + rdbFile.length; i++){
-                            response[i] = rdbFile[i- sizePrefix.length];
+                        for (int i = sizePrefix.length; i < sizePrefix.length + rdbFile.length; i++) {
+                            response[i] = rdbFile[i - sizePrefix.length];
 
                         }
                         out.write(response);
-                        System.out.println("I was there and i am about to do it");
-                        Config.replicas.add(out);
-                        System.out.println("i am here and i didi it");
+                        out.write(rdbFile);
+
+                        //clearing replica reader cache
+                        out.write("\r\n".getBytes());
+                        
+                        while (true) {
+                            if (request.size() != 0 && Config.role.equals(Roles.MASTER)) {
+                                if (request.size() != 0) {
+                                    String[] test = request.poll();
+                                    System.out.println("Sending command to replica: " + Arrays.toString(test));
+                                    out.write(Utils.encodeCommandArray(test).getBytes());
+                                }
+
+                            }
+
+                        }
                     } else {
 
                         writer.write("-ERROR: Unknown command or incorrect arguments\r\n");
