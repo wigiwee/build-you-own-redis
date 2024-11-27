@@ -19,7 +19,7 @@ public class RequestHandler {
     static ConcurrentHashMap<String, String> keyValueHashMap = new ConcurrentHashMap<>();
     static ConcurrentHashMap<String, Long> keyExpiryHashMap = new ConcurrentHashMap<>();
 
-    static Queue<String[]> request = new ConcurrentLinkedQueue<>();
+    static volatile Queue<String[]> request = new ConcurrentLinkedQueue<>();
 
     public RequestHandler(Socket clientSocket) {
         this.clientSocket = clientSocket;
@@ -201,16 +201,15 @@ public class RequestHandler {
                         out.write(response);
                         out.write(rdbFile);
 
-                        //clearing replica reader cache
+                        // clearing replica reader cache
                         out.write("\r\n".getBytes());
-                    
+
                         while (true) {
-                            if (request.size() != 0 && Config.role.equals(Roles.MASTER) && Config.isHandshakeComplete == true) {
-                                if (request.size() != 0) {
-                                    String[] test = request.poll();
-                                    System.out.println("Sending command to replica: " + Arrays.toString(test));
-                                    out.write(Utils.encodeCommandArray(test).getBytes());
-                                }
+                            if (request.size() != 0 && Config.role.equals(Roles.MASTER)
+                                    && Config.isHandshakeComplete == true) {
+                                String[] test = request.poll();
+                                System.out.println("Sending command to replica: " + Arrays.toString(test));
+                                out.write(Utils.encodeCommandArray(test).getBytes());
 
                             }
 
