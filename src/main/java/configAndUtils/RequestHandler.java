@@ -196,7 +196,6 @@ public class RequestHandler {
                         }
                         for (int i = sizePrefix.length; i < sizePrefix.length + rdbFile.length; i++) {
                             response[i] = rdbFile[i - sizePrefix.length];
-
                         }
                         out.write(response);
                         out.write(rdbFile);
@@ -210,9 +209,9 @@ public class RequestHandler {
                                     && Config.isHandshakeComplete == true) {
                                 String[] test = request.poll();
                                 System.out.println("Sending command to replica: " + Arrays.toString(test));
+                                Config.bytesProcessedByMaster += Utils.encodeCommandArray(test).getBytes().length;
                                 out.write(Utils.encodeCommandArray(test).getBytes());
-
-                            }
+                            }   
                         }
                     } else {
 

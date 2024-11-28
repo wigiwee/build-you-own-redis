@@ -19,17 +19,15 @@ public class Main {
             RdbUtils.processRdbFile();
         }
 
-        
+        //doing a asynchronous function call
         if (Config.role.equals(Roles.SLAVE) && Config.isHandshakeComplete == false) {
-            Thread doHandshake = new Thread(){
+            new Thread((new Runnable() {
                 public void run(){
                     Utils.handshake();
                 }
-            };
-            doHandshake.start();
+            })).start();
         }
         
-
         Config.printConfig();
         System.out.println("Logs from your program will appear here!");
 
