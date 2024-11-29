@@ -1,8 +1,7 @@
-package configAndUtils;
+package com.redis.serverProfile;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
-import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
@@ -13,22 +12,27 @@ import java.util.Queue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
-public class RequestHandler {
+import com.redis.configAndUtils.Config;
+import com.redis.configAndUtils.RdbUtils;
+import com.redis.configAndUtils.Roles;
+import com.redis.configAndUtils.Utils;
+
+public class MasterProfile implements Runnable {
 
     public Socket clientSocket;
     static ConcurrentHashMap<String, String> keyValueHashMap = new ConcurrentHashMap<>();
     static ConcurrentHashMap<String, Long> keyExpiryHashMap = new ConcurrentHashMap<>();
 
-    static volatile Queue<String[]> request = new ConcurrentLinkedQueue<>();
-
-    public RequestHandler(Socket clientSocket) {
+    public MasterProfile(Socket clientSocket) {
         this.clientSocket = clientSocket;
     }
 
+    @Override
     public void run() {
         try (
                 BufferedReader reader = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
                 BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(clientSocket.getOutputStream()));) {
+
             String content;
 
             while ((content = reader.readLine()) != null) {
@@ -75,11 +79,7 @@ public class RequestHandler {
                         }
                         writer.write("+OK\r\n");
                         writer.flush();
-
-                        if (Config.role.equals(Roles.MASTER)) {
-                            System.out.println("Adding args to queue: " + Arrays.toString(args));
-                            request.add(args);
-                        }
+                        Utils.sendReplicaionCommands(args);
 
                     } else if (args[0].equalsIgnoreCase("get") && numArgs == 2) {
                         if (keyValueHashMap.containsKey(args[1])) {
@@ -200,19 +200,19 @@ public class RequestHandler {
                         out.write(response);
                         out.write(rdbFile);
 
-                        // clearing replica reader cache
-                        out.write("\r\n".getBytes());
                         Config.isHandshakeComplete = true;
 
-                        while (true) {
-                            if (request.size() != 0 && Config.role.equals(Roles.MASTER)
-                                    && Config.isHandshakeComplete == true) {
-                                String[] test = request.poll();
-                                System.out.println("Sending command to replica: " + Arrays.toString(test));
-                                Config.bytesProcessedByMaster += Utils.encodeCommandArray(test).getBytes().length;
-                                out.write(Utils.encodeCommandArray(test).getBytes());
-                            }   
-                        }
+                        Config.replicas.add(out);
+                        // while (true) {
+                        // if (request.size() != 0 && Config.role.equals(Roles.MASTER)
+                        // && Config.isHandshakeComplete == true) {
+                        // String[] test = request.poll();
+                        // System.out.println("Sending command to replica: " + Arrays.toString(test));
+                        // Config.bytesProcessedByMaster +=
+                        // Utils.encodeCommandArray(test).getBytes().length;
+                        // out.write(Utils.encodeCommandArray(test).getBytes());
+                        // }
+                        // }
                     } else {
 
                         writer.write("-ERROR: Unknown command or incorrect arguments\r\n");
@@ -227,12 +227,6 @@ public class RequestHandler {
             }
         } catch (Exception e) {
             e.printStackTrace();
-        } finally {
-            try {
-                clientSocket.close(); // Ensure socket is closed to avoid resource leaks
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
         }
     }
 }

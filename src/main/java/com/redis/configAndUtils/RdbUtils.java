@@ -1,4 +1,4 @@
-package configAndUtils;
+package com.redis.configAndUtils;
 
 import java.io.File;
 import java.io.FileInputStream;

@@ -1,4 +1,4 @@
-package configAndUtils;
+package com.redis.configAndUtils;
 
 public class Roles {
 

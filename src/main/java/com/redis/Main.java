@@ -1,37 +1,44 @@
+package com.redis;
+
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.UnknownHostException;
 
-import configAndUtils.Config;
-import configAndUtils.RdbUtils;
-import configAndUtils.RequestHandler;
-import configAndUtils.Roles;
-import configAndUtils.Utils;
+import com.redis.configAndUtils.Config;
+import com.redis.configAndUtils.RdbUtils;
+import com.redis.configAndUtils.Roles;
+import com.redis.configAndUtils.Utils;
+import com.redis.serverProfile.MasterProfile;
+import com.redis.serverProfile.SlaveProfile;
 
 public class Main {
 
     public static void main(String[] args) throws UnknownHostException, IOException {
-
+ 
         Utils.readConfiguration(args);
 
         if (!Config.dir.isEmpty() && !Config.dbfilename.isEmpty()) {
             RdbUtils.processRdbFile();
         }
 
-        //doing a asynchronous function call
+        // doing a asynchronous function call
         if (Config.role.equals(Roles.SLAVE) && Config.isHandshakeComplete == false) {
             new Thread((new Runnable() {
-                public void run(){
-                    Utils.handshake();
+                public void run() {
+                    try {
+                        SlaveProfile.handshake();
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
                 }
             })).start();
         }
-        
+
         Config.printConfig();
+
         System.out.println("Logs from your program will appear here!");
 
-        
         ServerSocket serverSocket = null;
         Socket clientSocket = null;
         try {
@@ -41,10 +48,16 @@ public class Main {
             while (true) {
 
                 clientSocket = serverSocket.accept();
-                RequestHandler requestHandler = new RequestHandler(clientSocket);
-                Thread.startVirtualThread(() -> {
-                    requestHandler.run();
-                });
+                
+                if(Config.role.equals(Roles.MASTER)){
+                    MasterProfile requestHandler = new MasterProfile(clientSocket);
+                    Thread.startVirtualThread(requestHandler);
+
+                }else{
+                    SlaveProfile slaveRequestHandler  = new SlaveProfile(clientSocket);
+                    Thread.startVirtualThread(slaveRequestHandler);
+
+                }
             }
         } catch (IOException e) {
             System.out.println("IOException: " + e.getMessage());

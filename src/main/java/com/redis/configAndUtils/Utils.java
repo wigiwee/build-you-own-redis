@@ -1,4 +1,4 @@
-package configAndUtils;
+package com.redis.configAndUtils;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -9,6 +9,8 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.net.Socket;
 import java.util.Arrays;
+
+import com.redis.serverProfile.MasterProfile;
 
 public class Utils {
 
@@ -54,7 +56,7 @@ public class Utils {
 
     public static String encodeArray(String[] inputArray) {
         StringBuilder output = new StringBuilder("");
-        output.append("*").append(inputArray.length).append(configAndUtils.Config.CRLF);
+        output.append("*").append(inputArray.length).append(com.redis.configAndUtils.Config.CRLF);
         for (int i = 0; i < inputArray.length; i++) {
             output.append("$").append(inputArray[i].length()).append(Config.CRLF).append(inputArray[i])
                     .append(Config.CRLF);
@@ -112,71 +114,10 @@ public class Utils {
         }
     }
 
-    public static void handshake() {
+    public static void sendReplicaionCommands(String[] commands) throws IOException{
 
-        try (Socket socket = new Socket(Config.hostName, Config.hostPort);
-        Socket itself = new Socket("127.0.0.1", Config.port);) {
-            System.out.println("doing handshake");
-            BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
-            BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-
-            // stage 1
-            writer.write(RESP2format("PING"));
-
-            writer.flush();
-            System.out.println(reader.readLine());
-
-            // stage 2
-            writer.write(RESP2format("REPLCONF listening-port " + Config.port));
-            writer.flush();
-            System.out.println(reader.readLine());
-
-            // stage 3
-            writer.write(RESP2format("REPLCONF capa psync2"));
-            writer.flush();
-            System.out.println(reader.readLine());
-
-            // configuring replica to send ACK
-            // writer.write(RESP2format("REPLCONF GETACK *"));
-            // writer.flush();
-
-            writer.write(Utils.RESP2format("PSYNC ? -1"));
-            writer.flush();
-
-            Config.isHandshakeComplete = true;
-
-            OutputStream out = itself.getOutputStream();
-            while(true){
-                String content;
-                while ((content = reader.readLine()) != null) {
-                    // Parse the RESP array
-                    if (content.startsWith("*")) {
-                        int numArgs = Integer.parseInt(content.substring(1));
-                        String[] args = new String[numArgs];
-                        for (int i = 0; i < numArgs; i++) {
-                            String lengthLine = reader.readLine();
-                            if (!lengthLine.startsWith("$")) {
-                                writer.write("-ERROR: Invalid RESP format\r\n");
-                                writer.flush();
-                                continue;
-                            }
-                            int length = Integer.parseInt(lengthLine.substring(1));
-                            args[i] = reader.readLine();
-                            if (args[i].length() != length) {
-                                writer.write("-ERROR: Length mismatch\r\n");
-                                writer.flush();
-                                continue;
-                            }
-                        }
-                        System.out.println("Command received :" + Arrays.toString(args));
-                        out.write(Utils.encodeCommandArray(args).getBytes());
-                    }
-                }
+            for (OutputStream replica  : Config.replicas) {
+                replica.write(Utils.encodeCommandArray(commands).getBytes());
             }
-            
-        } catch (IOException e) {
-            System.out.println("Something went wrong while establishing handshake");
-        }
-
     }
 }
