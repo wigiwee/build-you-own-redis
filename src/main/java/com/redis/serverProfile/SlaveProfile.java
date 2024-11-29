@@ -4,11 +4,9 @@ import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.net.Socket;
 import java.util.Arrays;
-import java.util.Base64;
 import java.util.concurrent.ConcurrentHashMap;
 
 import com.redis.configAndUtils.Config;
@@ -62,7 +60,7 @@ public class SlaveProfile implements Runnable {
                 }
             }
 
-        }catch(IOException e){
+        } catch (IOException e) {
             System.out.println("Something went wrong while processing the command");
             System.out.println("Cannot read/write from the socket");
             e.printStackTrace();
@@ -202,7 +200,6 @@ public class SlaveProfile implements Runnable {
 
     }
 
-
     public static void handshake() throws Exception {
 
         try (Socket socket = new Socket(Config.hostName, Config.hostPort);
@@ -242,28 +239,27 @@ public class SlaveProfile implements Runnable {
             }
             System.out.println("rdb file size: " + rdbSize);
 
-            while((char) reader.read() != '*'){
+            while ((char) reader.read() != '*') {
                 reader.read();
             }
-            
+
             int commandArrayLength = Integer.parseInt(reader.readLine().trim());
             String[] commandArray = new String[commandArrayLength];
-            for(int i = 0 ; i < commandArrayLength; i++ ){
+            for (int i = 0; i < commandArrayLength; i++) {
                 String lengthString = reader.readLine();
                 int commandLength = 0;
-                if(lengthString.startsWith("$")){
+                if (lengthString.startsWith("$")) {
                     commandLength = Integer.parseInt(lengthString.substring(1));
                     commandArray[i] = reader.readLine();
-                    if(commandArray[i].length() !=commandLength){
+                    if (commandArray[i].length() != commandLength) {
                         throw new Exception("invalid RESP string, length dosne't match");
                     }
                 }
             }
-            System.out.println("first command array : "  + Arrays.toString(commandArray));
+            System.out.println("first command array : " + Arrays.toString(commandArray));
             SlaveProfile.processCommand(writer, commandArray);
 
             Config.isHandshakeComplete = true;
-
 
             while (true) {
                 String content;

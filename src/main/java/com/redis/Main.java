@@ -15,7 +15,7 @@ import com.redis.serverProfile.SlaveProfile;
 public class Main {
 
     public static void main(String[] args) throws UnknownHostException, IOException {
- 
+
         Utils.readConfiguration(args);
 
         if (!Config.dir.isEmpty() && !Config.dbfilename.isEmpty()) {
@@ -48,13 +48,13 @@ public class Main {
             while (true) {
 
                 clientSocket = serverSocket.accept();
-                
-                if(Config.role.equals(Roles.MASTER)){
+
+                if (Config.role.equals(Roles.MASTER)) {
                     MasterProfile requestHandler = new MasterProfile(clientSocket);
                     Thread.startVirtualThread(requestHandler);
 
-                }else{
-                    SlaveProfile slaveRequestHandler  = new SlaveProfile(clientSocket);
+                } else {
+                    SlaveProfile slaveRequestHandler = new SlaveProfile(clientSocket);
                     Thread.startVirtualThread(slaveRequestHandler);
 
                 }

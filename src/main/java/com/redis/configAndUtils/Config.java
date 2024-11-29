@@ -35,7 +35,6 @@ public class Config {
 
     public static Set<OutputStream> replicas = Collections.synchronizedSet(new HashSet<>());
 
-
     public static void printConfig() {
         System.out.println("dir: " + dir);
         System.out.println("dbfile: " + dbfilename);

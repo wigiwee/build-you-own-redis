@@ -8,13 +8,10 @@ import java.io.OutputStreamWriter;
 import java.net.Socket;
 import java.util.Arrays;
 import java.util.Base64;
-import java.util.Queue;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentLinkedQueue;
 
 import com.redis.configAndUtils.Config;
 import com.redis.configAndUtils.RdbUtils;
-import com.redis.configAndUtils.Roles;
 import com.redis.configAndUtils.Utils;
 
 public class MasterProfile implements Runnable {
@@ -203,16 +200,6 @@ public class MasterProfile implements Runnable {
                         Config.isHandshakeComplete = true;
 
                         Config.replicas.add(out);
-                        // while (true) {
-                        // if (request.size() != 0 && Config.role.equals(Roles.MASTER)
-                        // && Config.isHandshakeComplete == true) {
-                        // String[] test = request.poll();
-                        // System.out.println("Sending command to replica: " + Arrays.toString(test));
-                        // Config.bytesProcessedByMaster +=
-                        // Utils.encodeCommandArray(test).getBytes().length;
-                        // out.write(Utils.encodeCommandArray(test).getBytes());
-                        // }
-                        // }
                     } else {
 
                         writer.write("-ERROR: Unknown command or incorrect arguments\r\n");

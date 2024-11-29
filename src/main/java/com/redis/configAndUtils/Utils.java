@@ -1,16 +1,8 @@
 package com.redis.configAndUtils;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.net.Socket;
-import java.util.Arrays;
-
-import com.redis.serverProfile.MasterProfile;
 
 public class Utils {
 
@@ -114,10 +106,10 @@ public class Utils {
         }
     }
 
-    public static void sendReplicaionCommands(String[] commands) throws IOException{
+    public static void sendReplicaionCommands(String[] commands) throws IOException {
 
-            for (OutputStream replica  : Config.replicas) {
-                replica.write(Utils.encodeCommandArray(commands).getBytes());
-            }
+        for (OutputStream replica : Config.replicas) {
+            replica.write(Utils.encodeCommandArray(commands).getBytes());
+        }
     }
 }
