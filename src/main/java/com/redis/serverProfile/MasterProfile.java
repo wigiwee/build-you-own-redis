@@ -76,6 +76,7 @@ public class MasterProfile implements Runnable {
                         }
                         writer.write("+OK\r\n");
                         writer.flush();
+                        while(Config.isHandshakeComplete!= true);
                         Utils.sendReplicaionCommands(args);
 
                     } else if (args[0].equalsIgnoreCase("get") && numArgs == 2) {
