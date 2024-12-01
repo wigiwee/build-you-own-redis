@@ -8,7 +8,9 @@ import java.io.OutputStreamWriter;
 import java.net.Socket;
 import java.util.Arrays;
 import java.util.Base64;
+import java.util.Queue;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 import com.redis.configAndUtils.Config;
 import com.redis.configAndUtils.RdbUtils;
@@ -17,8 +19,11 @@ import com.redis.configAndUtils.Utils;
 public class MasterProfile implements Runnable {
 
     public Socket clientSocket;
-    static ConcurrentHashMap<String, String> keyValueHashMap = new ConcurrentHashMap<>();
-    static ConcurrentHashMap<String, Long> keyExpiryHashMap = new ConcurrentHashMap<>();
+  
+    public static ConcurrentHashMap<String, String> keyValueHashMap = new ConcurrentHashMap<>();
+    public static ConcurrentHashMap<String, Long> keyExpiryHashMap = new ConcurrentHashMap<>();
+
+    public static Queue<String[]> requestsQueue = new ConcurrentLinkedQueue<>();
 
     public MasterProfile(Socket clientSocket) {
         this.clientSocket = clientSocket;
@@ -76,7 +81,6 @@ public class MasterProfile implements Runnable {
                         }
                         writer.write("+OK\r\n");
                         writer.flush();
-                        while(Config.isHandshakeComplete!= true);
                         Utils.sendReplicaionCommands(args);
 
                     } else if (args[0].equalsIgnoreCase("get") && numArgs == 2) {

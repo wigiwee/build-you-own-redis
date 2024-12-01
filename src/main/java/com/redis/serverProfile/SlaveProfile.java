@@ -195,7 +195,8 @@ public class SlaveProfile implements Runnable {
                 writer.flush();
             }
         } else {
-
+            writer.write("-ERROR: Unknown command or incorrect arguments\r\n");
+            writer.flush();
         }
 
     }
