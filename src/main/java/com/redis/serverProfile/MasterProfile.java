@@ -191,15 +191,7 @@ public class MasterProfile implements Runnable {
                         String EMPTY_RDB_FILE = "UkVESVMwMDEx+glyZWRpcy12ZXIFNy4yLjD6CnJlZGlzLWJpdHPAQPoFY3RpbWXCbQi8ZfoIdXNlZC1tZW3CsMQQAPoIYW9mLWJhc2XAAP/wbjv+wP9aog==";
                         byte[] rdbFile = Base64.getDecoder().decode(EMPTY_RDB_FILE);
                         byte[] sizePrefix = ("$" + rdbFile.length + "\r\n").getBytes();
-                        byte[] response = new byte[rdbFile.length + sizePrefix.length];
-
-                        for (int i = 0; i < sizePrefix.length; i++) {
-                            response[i] = sizePrefix[i];
-                        }
-                        for (int i = sizePrefix.length; i < sizePrefix.length + rdbFile.length; i++) {
-                            response[i] = rdbFile[i - sizePrefix.length];
-                        }
-                        out.write(response);
+                        out.write(sizePrefix);
                         out.write(rdbFile);
 
                         Config.isHandshakeComplete = true;

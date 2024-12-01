@@ -204,14 +204,14 @@ public class SlaveProfile implements Runnable {
     public static void handshake() throws Exception {
 
         try (Socket socket = new Socket(Config.hostName, Config.hostPort);
-                Socket itself = new Socket("127.0.0.1", Config.port);
                 BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
                 BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 
         ) {
 
             // stage 1 sending ping
-            writer.write(Utils.RESP2format("PING"));
+            // writer.write(Utils.RESP2format("PING"));
+            writer.write("*1\r\n$4\r\nPING\r\n");
             writer.flush();
             System.out.println(reader.readLine());
 
